@@ -1,0 +1,9 @@
+google-genai
+python-dotenv
+pydantic
+fastapi
+uvicorn
+beautifulsoup4
+playwright
+pypdf
+ollama

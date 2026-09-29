@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<!--
+  Formulario VIVO (servido por app.py) · v4 "modo reunión": se rellena en una
+  reunión acompañada por el consultor, así que no hay acordeones ni atajos —
+  4 pasos = 4 momentos de la reunión (Quiénes sois / Cómo trabajáis / Dónde
+  duele / Restricciones y cierre). Regla de admisión de preguntas: si una
+  respuesta no puede modificar ROI, viabilidad, prioridad o requisitos, la
+  pregunta no merece existir.
+  Spec: docs/FORMULARIO.md · Esquema: src/formulario.py (EmpresaForm).
+-->
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reunión de diagnóstico · Programa IA</title>
+<style>
+  :root{
+    --brand:#2F5597; --brand-d:#1F3864; --accent:#5B8BC9; --ink:#262626;
+    --muted:#595959; --line:#C9D3E0; --bg:#F3F5F8; --good:#185335;
+    --font:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);font-family:var(--font);color:var(--ink);line-height:1.55}
+  .wrap{max-width:680px;margin:0 auto;padding:0 16px 90px}
+  .hero{background:#fff;color:var(--ink);border-bottom:1px solid var(--line);padding:22px 26px 24px}
+  .hero .inner{display:flex;align-items:center;gap:20px}
+  .hero .brand{flex:none;max-width:150px;padding-right:20px;border-right:1px solid var(--line);
+    font-size:13px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:var(--brand);line-height:1.35}
+  .hero .badge{display:inline-block;font-size:11px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;
+    color:var(--brand-d);background:var(--bg);padding:4px 10px;border-radius:99px}
+  .hero h1{font-size:24px;margin:8px 0 4px;line-height:1.2;color:var(--brand-d);font-weight:700}
+  .hero p{margin:0;font-size:14px;color:var(--muted)}
+  .notas textarea{min-height:64px;background:#FBFCFD}
+  .notas label{font-size:13px;color:var(--muted)}
+  /* progreso */
+  .prog{position:sticky;top:0;z-index:20;background:var(--bg);padding:14px 0 12px;margin-bottom:8px}
+  .prog .lbl{display:flex;justify-content:space-between;font-size:12px;font-weight:600;
+    color:var(--muted);margin-bottom:7px}
+  .bar{height:9px;border-radius:99px;background:#dbe3ee;overflow:hidden}
+  .bar > i{display:block;height:100%;width:40%;border-radius:99px;
+    background:var(--brand);transition:width .45s ease}
+  .card{background:#fff;border:1px solid var(--line);border-radius:14px;
+    padding:22px 22px;margin-bottom:16px;box-shadow:0 1px 2px rgba(15,23,42,.04)}
+  .card h2{font-size:13px;text-transform:uppercase;letter-spacing:.7px;color:var(--brand);margin:0 0 4px}
+  .card .sub{color:var(--muted);font-size:13px;margin:0 0 18px}
+  .field{margin-bottom:18px}
+  .field:last-child{margin-bottom:0}
+  label{display:block;font-weight:600;font-size:15px;margin-bottom:7px}
+  label .req{color:#C0602A}
+  .opt{font-weight:500;color:var(--muted);font-size:13px}
+  .hint{font-weight:400;color:var(--muted);font-size:13px;margin:-2px 0 8px}
+  input[type=text],input[type=email],input[type=url],select,textarea{
+    width:100%;padding:11px 13px;border:1px solid #cbd5e1;border-radius:10px;
+    font-family:inherit;font-size:15px;color:var(--ink);background:#fff}
+  textarea{resize:vertical;min-height:88px}
+  input:focus,select:focus,textarea:focus{outline:none;border-color:var(--brand);
+    box-shadow:0 0 0 3px rgba(47,85,151,.15)}
+  .row{display:flex;gap:14px;flex-wrap:wrap}
+  .row .field{flex:1;min-width:200px}
+  .checks{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  @media(max-width:480px){.checks{grid-template-columns:1fr}}
+  .checks label{font-weight:500;display:flex;align-items:center;gap:9px;margin:0;cursor:pointer;
+    border:1px solid var(--line);border-radius:10px;padding:10px 12px;font-size:14px}
+  .checks label:hover{border-color:var(--brand)}
+  .checks input{width:17px;height:17px;accent-color:var(--brand)}
+  .radios{display:flex;flex-direction:column;gap:9px}
+  .radios label{font-weight:500;display:flex;align-items:center;gap:10px;margin:0;cursor:pointer;
+    border:1px solid var(--line);border-radius:10px;padding:11px 13px;font-size:14px}
+  .radios label:hover{border-color:var(--brand)}
+  .radios input{accent-color:var(--brand)}
+  .slider-val{font-weight:700;color:var(--brand);font-size:14px}
+  .slider-ends{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-top:4px}
+  input[type=range]{width:100%;accent-color:var(--brand);margin-top:8px}
+  .otros-input{margin-top:10px}
+  button{font-family:inherit;font-size:16px;font-weight:700;border:0;border-radius:11px;
+    padding:14px 24px;cursor:pointer}
+  .btn-primary{background:var(--brand);color:#fff}
+  .btn-primary:hover{background:var(--brand-d)}
+  .btn-ghost{background:#fff;color:var(--brand);border:1px solid #cbd5e1}
+  .actions{display:flex;gap:12px;justify-content:space-between;margin-top:4px}
+  .actions.end{justify-content:flex-end}
+  .hidden{display:none}
+  .rev dt{font-weight:700;font-size:13px;color:var(--muted);margin-top:14px}
+  .rev dd{margin:3px 0 0;font-size:15px;white-space:pre-wrap}
+  #gracias{text-align:center;padding:18px 8px}
+  #gracias .tick{width:72px;height:72px;border-radius:50%;background:#E6F2E8;color:var(--good);
+    display:flex;align-items:center;justify-content:center;font-size:38px;margin:6px auto 16px}
+  #gracias h2{font-size:23px;margin:0 0 8px;color:var(--ink);text-transform:none;letter-spacing:0}
+  #gracias p{color:var(--muted);font-size:15px;margin:0 auto;max-width:440px}
+  .foot{text-align:center;color:var(--muted);font-size:12px;margin-top:14px}
+</style>
+</head>
+<body>
+<div class="hero">
+  <div class="wrap inner" style="padding-bottom:0">
+    <div class="brand">Estudio de viabilidad de IA</div>
+    <div>
+      <span class="badge">Reunión de diagnóstico</span>
+      <h1>Reunión de diagnóstico</h1>
+      <p>Cuatro pasos: quiénes sois, cómo trabajáis, una primera oportunidad y qué hay que respetar. El estudio de viabilidad se elabora después y se presenta en la sesión de roadmap.</p>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+  <div class="prog" id="prog">
+    <div class="lbl"><span id="prog-text">Paso 1 de 4</span><span></span></div>
+    <div class="bar"><i id="prog-fill"></i></div>
+  </div>
+
+  <form id="form">
+    <!-- PASO 1 -->
+    <div class="step" id="step-1">
+      <div class="card">
+        <h2>1 · Quiénes sois</h2>
+        <p class="sub">La identidad de la empresa: cuanto más concreta, más afinado sale el estudio.</p>
+        <div class="row">
+          <div class="field">
+            <label>Nombre de la empresa <span class="req">*</span></label>
+            <input type="text" id="nombre_empresa" required placeholder="Mi Empresa S.L.">
+          </div>
+          <div class="field">
+            <label>Municipio <span class="req">*</span></label>
+            <input type="text" id="municipio" required placeholder="Dos Hermanas, Sevilla…">
+          </div>
+        </div>
+        <div class="row">
+          <div class="field">
+            <label>Página web <span class="opt">(si la tenéis, el estudio sale mucho más afinado)</span></label>
+            <input type="text" id="web" placeholder="www.miempresa.com">
+          </div>
+          <div class="field">
+            <label>Personas en la empresa <span class="req">*</span></label>
+            <select id="plantilla" required>
+              <option value="">— elige —</option>
+              <option>1-5</option><option>6-20</option><option>21-50</option>
+              <option>51-250</option><option>+250</option>
+            </select>
+          </div>
+        </div>
+        <div class="field">
+          <label>¿Quién es vuestro cliente principal? <span class="req">*</span></label>
+          <select id="cliente_principal" required>
+            <option value="">— elige —</option>
+            <option>Consumidor final</option>
+            <option>Pymes</option>
+            <option>Grandes empresas</option>
+            <option>Administración pública</option>
+            <option>Mixto</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>¿Qué áreas gestionáis con vuestro propio equipo interno?</label>
+          <div class="hint">Marca las que lleváis dentro (no externalizadas).</div>
+          <div class="checks" id="areas">
+            <label><input type="checkbox" value="Atención al cliente">Atención al cliente</label>
+            <label><input type="checkbox" value="Ventas / Marketing">Ventas / Marketing</label>
+            <label><input type="checkbox" value="Producción / Fabricación">Producción / Fabricación</label>
+            <label><input type="checkbox" value="Operaciones / Logística">Operaciones / Logística</label>
+            <label><input type="checkbox" value="Contabilidad / Finanzas">Contabilidad / Finanzas</label>
+            <label><input type="checkbox" value="Recursos Humanos">Recursos Humanos</label>
+            <label><input type="checkbox" value="Legal y Compliance">Legal y Compliance</label>
+            <label><input type="checkbox" value="__otros__" id="areas_otros_chk">Otras…</label>
+          </div>
+          <input type="text" id="areas_otros" class="otros-input hidden" placeholder="¿Qué otras áreas?">
+        </div>
+        <div class="field notas">
+          <label>Notas · paso 1</label>
+          <textarea id="notas_p1"></textarea>
+        </div>
+      </div>
+      <div class="actions end">
+        <button type="button" class="btn-primary" data-next="2">Siguiente →</button>
+      </div>
+    </div>
+
+    <!-- PASO 2 -->
+    <div class="step hidden" id="step-2">
+      <div class="card">
+        <h2>2 · Cómo trabajáis</h2>
+        <p class="sub">La organización: con qué herramientas y dónde vive la información.</p>
+        <div class="field">
+          <label>Con vuestras palabras: ¿a qué os dedicáis y quién es vuestro cliente ideal? <span class="req">*</span></label>
+          <textarea id="descripcion" required placeholder="Fabricamos… / Damos servicio de… a clientes que…"></textarea>
+        </div>
+        <div class="field">
+          <label>¿Qué herramientas utilizáis habitualmente?</label>
+          <div class="hint">Marca todas las que uséis en el día a día.</div>
+          <div class="checks" id="herramientas">
+            <label><input type="checkbox" value="ERP">ERP</label>
+            <label><input type="checkbox" value="CRM">CRM</label>
+            <label><input type="checkbox" value="Excel">Excel</label>
+            <label><input type="checkbox" value="Google Workspace">Google Workspace</label>
+            <label><input type="checkbox" value="Microsoft 365">Microsoft 365</label>
+            <label><input type="checkbox" value="Correo electrónico">Correo electrónico</label>
+            <label><input type="checkbox" value="WhatsApp">WhatsApp</label>
+            <label><input type="checkbox" value="Software propio">Software propio</label>
+            <label><input type="checkbox" value="Otro">Otro</label>
+          </div>
+          <input type="text" id="herramientas_detalle" class="otros-input" placeholder="¿Cuáles exactamente? (ej. Sage 50, Holded, Odoo, un Access de 2009…)">
+        </div>
+        <div class="field">
+          <label>¿Qué habéis probado ya con IA o automatización, y qué pasó? <span class="opt">(opcional)</span></label>
+          <textarea id="intentos_previos" placeholder="Ej.: probamos una app de citas y la dejamos porque nadie la usaba; usamos ChatGPT para redactar correos…"></textarea>
+        </div>
+        <div class="field">
+          <label>¿Cuánto de vuestro trabajo clave es físico vs. digital?</label>
+          <div class="hint">Manipulación/logística ←→ gestión/documentos/pantallas.</div>
+          <input type="range" id="fisico_digital" min="0" max="100" step="5" value="50">
+          <div class="slider-ends">
+            <span>100% Físico</span>
+            <span class="slider-val" id="sliderVal">50% digital · 50% físico</span>
+            <span>100% Digital</span>
+          </div>
+        </div>
+        <div class="field">
+          <label>Si entra un empleado nuevo mañana, ¿dónde vive la información que necesita? <span class="req">*</span></label>
+          <div class="radios" id="info_vive">
+            <label><input type="radio" name="info_vive" value="Principalmente en papel" required>Principalmente en papel</label>
+            <label><input type="radio" name="info_vive" value="Cientos de PDFs, manuales o normativas">Cientos de PDFs, manuales o normativas</label>
+            <label><input type="radio" name="info_vive" value="Archivos Excel y carpetas compartidas">Archivos Excel y carpetas compartidas</label>
+            <label><input type="radio" name="info_vive" value="Un ERP/CRM o software corporativo">Un ERP/CRM o software corporativo</label>
+            <label><input type="radio" name="info_vive" value="Sobre todo en la experiencia de los veteranos">Sobre todo en la experiencia de los veteranos</label>
+            <label><input type="radio" name="info_vive" value="Mixto: un poco de todo">Mixto: un poco de todo</label>
+          </div>
+        </div>
+        <div class="field notas">
+          <label>Notas · paso 2</label>
+          <textarea id="notas_p2"></textarea>
+        </div>
+      </div>
+      <div class="actions">
+        <button type="button" class="btn-ghost" data-back="1">← Atrás</button>
+        <button type="button" class="btn-primary" data-next="3">Siguiente →</button>
+      </div>
+    </div>
+
+    <!-- PASO 3 -->
+    <div class="step hidden" id="step-3">
+      <div class="card">
+        <h2>3 · Una oportunidad ya detectada</h2>
+        <p class="sub">El primer candidato.</p>
+        <div class="field">
+          <label>¿En qué tarea interna invierte vuestro equipo demasiadas horas manuales o repetitivas? <span class="req">*</span></label>
+          <textarea id="cuello_botella" required placeholder="Ej.: pasar datos de unos sistemas a otros, redactar presupuestos, atender las mismas preguntas…"></textarea>
+        </div>
+        <div class="row">
+          <div class="field">
+            <label>¿Cuántas horas a la semana se van en esa tarea?</label>
+            <input type="text" id="horas_semana" placeholder="Ej.: unas 15">
+          </div>
+          <div class="field">
+            <label>¿Entre cuántas personas?</label>
+            <input type="text" id="personas_tarea" placeholder="Ej.: 2">
+          </div>
+        </div>
+        <div class="field">
+          <label>¿En qué formato llega la información de esa tarea?</label>
+          <div class="hint">Marca todos los que apliquen. Decide cómo se procesa y cuánto cuesta.</div>
+          <div class="checks" id="entrada_formato">
+            <label><input type="checkbox" value="Papel o notas a mano">Papel o notas a mano</label>
+            <label><input type="checkbox" value="PDF o escaneados">PDF o escaneados</label>
+            <label><input type="checkbox" value="Fotos">Fotos</label>
+            <label><input type="checkbox" value="Audios de WhatsApp">Audios de WhatsApp</label>
+            <label><input type="checkbox" value="Mensajes de texto (WhatsApp, correo)">Mensajes de texto (WhatsApp, correo)</label>
+            <label><input type="checkbox" value="Llamadas de teléfono">Llamadas de teléfono</label>
+            <label><input type="checkbox" value="Excel">Excel</label>
+            <label><input type="checkbox" value="El ERP o software">El ERP o software</label>
+          </div>
+        </div>
+        <div class="field">
+          <label>¿Qué ocurre si esa tarea se hace mal?</label>
+          <div class="hint">Marca la consecuencia más grave posible.</div>
+          <div class="radios" id="consecuencia_error">
+            <label><input type="radio" name="consecuencia_error" value="Apenas pasa nada">Apenas pasa nada.</label>
+            <label><input type="radio" name="consecuencia_error" value="Retrasos o molestias">Hay retrasos o molestias.</label>
+            <label><input type="radio" name="consecuencia_error" value="Pérdidas económicas">Hay pérdidas económicas.</label>
+            <label><input type="radio" name="consecuencia_error" value="Impacto legal o regulatorio">Hay impacto legal o regulatorio.</label>
+            <label><input type="radio" name="consecuencia_error" value="Afecta a la seguridad de personas">Puede afectar a la seguridad de personas.</label>
+          </div>
+        </div>
+        <div class="field">
+          <label>Una tarea automatizada sigue necesitando revisión humana. Si pasarais de hacer la tarea a solo comprobar que está correcta, ¿cuánto ahorraríais?</label>
+          <div class="hint">Cuánto cuesta comprobar frente a hacer.</div>
+          <div class="radios" id="coste_verificacion">
+            <label><input type="radio" name="coste_verificacion" value="Muchísimo: revisar es mucho más rápido que hacerlo desde cero">Muchísimo — revisar es mucho más rápido que hacerlo desde cero.</label>
+            <label><input type="radio" name="coste_verificacion" value="Bastante: más rápido revisar, pero requiere atención">Bastante — más rápido revisar, pero hay que prestar atención.</label>
+            <label><input type="radio" name="coste_verificacion" value="Poco: comprobar cada dato cuesta casi lo mismo que hacerlo">Poco — comprobar cada dato cuesta casi lo mismo que hacerlo.</label>
+            <label><input type="radio" name="coste_verificacion" value="Nada: cazar un fallo sutil costaría más que hacer la tarea">Nada — cazar un fallo sutil costaría más que hacer la tarea.</label>
+          </div>
+        </div>
+        <div class="field">
+          <label>¿Con qué frecuencia ocurre esa tarea?</label>
+          <div class="hint">Ayuda a estimar las horas reales que libera la IA.</div>
+          <select id="frecuencia">
+            <option value="">— elige —</option>
+            <option>Varias veces por hora</option>
+            <option>Varias veces al día</option>
+            <option>Diariamente</option>
+            <option>Semanalmente</option>
+            <option>Mensualmente</option>
+            <option>Ocasionalmente</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>¿Quién la realiza normalmente?</label>
+          <select id="rol_ejecutor">
+            <option value="">— elige —</option>
+            <option>Operario</option>
+            <option>Administrativo</option>
+            <option>Técnico</option>
+            <option>Ingeniero</option>
+            <option>Responsable de área</option>
+            <option>Dirección</option>
+            <option>Otro</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>¿Cuál describe mejor esa tarea?</label>
+          <div class="radios" id="criterio_experto">
+            <label><input type="radio" name="criterio_experto" value="Sigo reglas claras y conocidas">Sigo reglas claras y conocidas.</label>
+            <label><input type="radio" name="criterio_experto" value="Existen reglas, pero requieren interpretación frecuente">Existen reglas, pero requieren interpretación frecuente.</label>
+            <label><input type="radio" name="criterio_experto" value="Depende de experiencia o criterio experto difícil de explicar">Gran parte depende de experiencia o criterio experto difícil de explicar.</label>
+          </div>
+        </div>
+        <div class="field">
+          <label>¿Cómo sabéis hoy que el trabajo está bien hecho?</label>
+          <div class="radios" id="validacion">
+            <label><input type="radio" name="validacion" value="Existe una validación objetiva y verificable">Existe una validación objetiva y verificable.</label>
+            <label><input type="radio" name="validacion" value="Otra persona revisa el resultado">Otra persona revisa el resultado.</label>
+            <label><input type="radio" name="validacion" value="Los errores se detectan rápidamente cuando aparecen">Los errores se detectan rápidamente cuando aparecen.</label>
+            <label><input type="radio" name="validacion" value="No existe una comprobación clara">No existe una comprobación clara.</label>
+          </div>
+        </div>
+        <div class="field">
+          <label>¿Cuántos ejemplos correctos de esa tarea ya hecha tenéis?</label>
+          <div class="hint">Trabajo ya realizado que sirva de referencia o entrenamiento.</div>
+          <select id="ejemplos_historicos">
+            <option value="">— elige —</option>
+            <option>Más de 1.000</option>
+            <option>Entre 100 y 1.000</option>
+            <option>Entre 10 y 100</option>
+            <option>Menos de 10</option>
+            <option>Ninguno</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Si la persona que más sabe de este proceso no estuviera disponible durante un mes, ¿qué ocurriría?</label>
+          <div class="radios" id="dependencia_clave">
+            <label><input type="radio" name="dependencia_clave" value="Apenas afectaría">Apenas afectaría.</label>
+            <label><input type="radio" name="dependencia_clave" value="Habría ciertas dificultades">Habría ciertas dificultades.</label>
+            <label><input type="radio" name="dependencia_clave" value="El proceso se ralentizaría significativamente">El proceso se ralentizaría significativamente.</label>
+            <label><input type="radio" name="dependencia_clave" value="El proceso quedaría bloqueado">El proceso quedaría bloqueado.</label>
+          </div>
+        </div>
+        <div class="field notas">
+          <label>Notas · paso 3</label>
+          <textarea id="notas_p3"></textarea>
+        </div>
+      </div>
+      <div class="actions">
+        <button type="button" class="btn-ghost" data-back="2">← Atrás</button>
+        <button type="button" class="btn-primary" data-next="4">Siguiente →</button>
+      </div>
+    </div>
+
+    <!-- PASO 4 -->
+    <div class="step hidden" id="step-4">
+      <div class="card">
+        <h2>4 · Restricciones y cierre</h2>
+        <p class="sub">Los límites que el plan debe respetar.</p>
+        <div class="field">
+          <label>¿Existe alguna limitación que debamos respetar?</label>
+          <div class="hint">Marca todas las que apliquen.</div>
+          <div class="checks" id="restricciones">
+            <label><input type="checkbox" value="Datos sensibles">Datos sensibles</label>
+            <label><input type="checkbox" value="Información confidencial">Información confidencial</label>
+            <label><input type="checkbox" value="Requisitos regulatorios">Requisitos regulatorios</label>
+            <label><input type="checkbox" value="Procesos certificados">Procesos certificados</label>
+            <label><input type="checkbox" value="Ninguna relevante">Ninguna relevante</label>
+          </div>
+          <input type="text" id="restricciones_detalle" class="otros-input" placeholder="¿Cuáles exactamente? (ej. ISO 9001, IATF 16949, datos de salud, NDA con un cliente…)">
+        </div>
+        <div class="field">
+          <label>¿Qué capacidad os gustaría tener y hoy no podéis por falta de tiempo o recursos? <span class="opt">(opcional)</span></label>
+          <textarea id="capacidad_deseada" placeholder="Lo que haríais si hubiera tiempo y manos para ello…"></textarea>
+        </div>
+        <div class="field">
+          <label>Para contextualizar: ¿podéis nombrar otras empresas similares a la vuestra? <span class="opt">(opcional)</span></label>
+          <div class="hint">Nos ayuda a buscar información sobre procesos que podáis compartir.</div>
+          <input type="text" id="referente" placeholder="Una o varias, separadas por comas">
+        </div>
+        <div class="field notas">
+          <label>Notas · paso 4</label>
+          <textarea id="notas_p4"></textarea>
+        </div>
+      </div>
+      <div class="card">
+        <h2>Y por último…</h2>
+        <p class="sub">Con quién seguimos la conversación.</p>
+        <div class="row">
+          <div class="field">
+            <label>Nombre <span class="req">*</span></label>
+            <input type="text" id="contacto_nombre" required placeholder="Nombre y apellidos">
+          </div>
+          <div class="field">
+            <label>Correo profesional <span class="req">*</span></label>
+            <input type="email" id="contacto_email" required placeholder="tu@empresa.com">
+          </div>
+        </div>
+      </div>
+      <div class="actions">
+        <button type="button" class="btn-ghost" data-back="3">← Atrás</button>
+        <button type="button" class="btn-primary" id="btn-revisar">Revisar →</button>
+      </div>
+    </div>
+  </form>
+
+  <!-- REVISIÓN -->
+  <div id="revision" class="card hidden">
+    <h2>Revisa antes de enviar</h2>
+    <dl class="rev" id="rev-list"></dl>
+    <div class="actions">
+      <button type="button" class="btn-ghost" id="btn-editar">← Editar</button>
+      <button type="button" class="btn-primary" id="btn-enviar">Enviar</button>
+    </div>
+  </div>
+
+  <!-- GRACIAS -->
+  <div id="gracias" class="card hidden">
+    <div class="tick">&#10003;</div>
+    <h2>Gracias, <span id="g-nombre"></span></h2>
+    <p id="g-msg"></p>
+    <p class="hint" style="margin-top:14px">Con lo que hemos hablado hoy investigamos vuestro caso y sus precedentes más cercanos.</p>
+  </div>
+
+  <div class="foot">La información facilitada se usa únicamente para elaborar el estudio de viabilidad, con apoyo de servicios de análisis de terceros, y no se cede a nadie más.</div>
+</div>
+
+<script>
+const $ = s => document.querySelector(s);
+const val = id => ($(id).value || "").trim();
+const checks = sel => [...document.querySelectorAll(sel+" input:checked")].map(c => c.value);
+
+// slider en vivo
+const slider = $("#fisico_digital");
+function pintaSlider(){ const d=+slider.value; $("#sliderVal").textContent = `${d}% digital · ${100-d}% físico`; }
+slider.addEventListener("input", pintaSlider); pintaSlider();
+
+// "Otras…" áreas
+$("#areas_otros_chk").addEventListener("change", e =>
+  $("#areas_otros").classList.toggle("hidden", !e.target.checked));
+
+function areasInternas(){
+  const arr = checks("#areas").filter(v => v !== "__otros__");
+  const otro = val("#areas_otros");
+  if(checks("#areas").includes("__otros__") && otro) arr.push(otro);
+  return arr;
+}
+
+// --- Wizard de 3 pasos ---
+let pasoActual = 1;
+const FILL = {1:30, 2:55, 3:80, 4:100};   // endowed progress: arranca al 30%
+function mostrarPaso(n){
+  pasoActual = n;
+  [1,2,3,4].forEach(i => $("#step-"+i).classList.toggle("hidden", i!==n));
+  $("#prog-text").textContent = `Paso ${n} de 4`;
+  $("#prog-fill").style.width = FILL[n] + "%";
+  scrollTo({top:0, behavior:"smooth"});
+}
+function validarPaso(n){
+  const step = $("#step-"+n);
+  for(const el of step.querySelectorAll("input, select, textarea")){
+    if(!el.reportValidity()) return false;
+  }
+  if(n === 1 && checks("#areas").includes("__otros__") && !val("#areas_otros")){
+    alert("Marcaste «Otras…» en las áreas: escribe cuáles."); $("#areas_otros").focus(); return false;
+  }
+  return true;
+}
+document.querySelectorAll("[data-next]").forEach(b =>
+  b.addEventListener("click", () => { if(validarPaso(pasoActual)) mostrarPaso(+b.dataset.next); }));
+document.querySelectorAll("[data-back]").forEach(b =>
+  b.addEventListener("click", () => mostrarPaso(+b.dataset.back)));
+$("#form").addEventListener("submit", e => e.preventDefault());  // Enter no envía
+
+const radio = name => (document.querySelector(`#${name} input:checked`)||{}).value || "";
+
+function recoger(){
+  return {
+    nombre_empresa: val("#nombre_empresa"), municipio: val("#municipio"), web: val("#web"),
+    plantilla: val("#plantilla"), cliente_principal: val("#cliente_principal"),
+    areas_internas: areasInternas(),
+    descripcion: val("#descripcion"),
+    herramientas: checks("#herramientas"), herramientas_detalle: val("#herramientas_detalle"),
+    intentos_previos: val("#intentos_previos"),
+    info_vive: radio("info_vive"), fisico_digital: +slider.value,
+    cuello_botella: val("#cuello_botella"),
+    horas_semana: val("#horas_semana"), personas_tarea: val("#personas_tarea"),
+    entrada_formato: checks("#entrada_formato"),
+    consecuencia_error: radio("consecuencia_error"),
+    coste_verificacion: radio("coste_verificacion"),
+    frecuencia: val("#frecuencia"), rol_ejecutor: val("#rol_ejecutor"),
+    criterio_experto: radio("criterio_experto"),
+    validacion: radio("validacion"),
+    ejemplos_historicos: val("#ejemplos_historicos"),
+    dependencia_clave: radio("dependencia_clave"),
+    restricciones: checks("#restricciones"), restricciones_detalle: val("#restricciones_detalle"),
+    capacidad_deseada: val("#capacidad_deseada"),
+    referente: val("#referente"),
+    notas_p1: val("#notas_p1"), notas_p2: val("#notas_p2"), notas_p3: val("#notas_p3"), notas_p4: val("#notas_p4"),
+    contacto_nombre: val("#contacto_nombre"), contacto_email: val("#contacto_email"),
+  };
+}
+
+const ETIQUETAS = {
+  nombre_empresa:"Empresa", municipio:"Municipio", web:"Web", plantilla:"Plantilla",
+  cliente_principal:"Cliente principal", areas_internas:"Áreas internas",
+  descripcion:"A qué os dedicáis",
+  herramientas:"Herramientas habituales", herramientas_detalle:"Cuáles exactamente",
+  intentos_previos:"Qué han probado ya",
+  info_vive:"Dónde vive la info", fisico_digital:"Físico/Digital",
+  cuello_botella:"Cuello de botella",
+  horas_semana:"Horas a la semana", personas_tarea:"Personas en la tarea",
+  entrada_formato:"Formato de entrada",
+  consecuencia_error:"Consecuencia si sale mal", coste_verificacion:"Coste de verificación",
+  frecuencia:"Frecuencia de la tarea", rol_ejecutor:"Quién la realiza",
+  criterio_experto:"Reglas vs criterio experto", validacion:"Cómo se valida hoy",
+  ejemplos_historicos:"Ejemplos correctos disponibles",
+  dependencia_clave:"Si falta quien más sabe",
+  restricciones:"Restricciones a respetar", restricciones_detalle:"Cuáles exactamente",
+  capacidad_deseada:"Capacidad deseada", referente:"Empresas similares",
+  notas_p1:"Notas · paso 1", notas_p2:"Notas · paso 2", notas_p3:"Notas · paso 3", notas_p4:"Notas · paso 4",
+  contacto_nombre:"Nombre", contacto_email:"Correo",
+};
+
+let datos = null;
+
+$("#btn-revisar").addEventListener("click", () => {
+  if(!validarPaso(4)) return;
+  datos = recoger();
+  const dl = $("#rev-list"); dl.innerHTML = "";
+  for(const k of Object.keys(ETIQUETAS)){
+    if(k.startsWith("notas_p")) continue;      // las notas son del consultor: no se muestran
+    let v = datos[k];
+    if(k === "fisico_digital") v = `${v}% digital · ${100-v}% físico`;
+    if(Array.isArray(v)) v = v.length ? v.join(", ") : "—";
+    if(v === "" || v == null) v = "—";
+    dl.insertAdjacentHTML("beforeend", `<dt>${escapeHtml(ETIQUETAS[k])}</dt><dd>${escapeHtml(v)}</dd>`);
+  }
+  $("#form").classList.add("hidden"); $("#prog").classList.add("hidden");
+  $("#revision").classList.remove("hidden");
+  scrollTo({top:0, behavior:"smooth"});
+});
+
+$("#btn-editar").addEventListener("click", () => {
+  $("#revision").classList.add("hidden");
+  $("#form").classList.remove("hidden"); $("#prog").classList.remove("hidden");
+  mostrarPaso(4);
+});
+
+$("#btn-enviar").addEventListener("click", async () => {
+  const btn = $("#btn-enviar"); btn.disabled = true; btn.textContent = "Enviando…";
+  try{
+    const r = await fetch("/api/enviar", {method:"POST",
+      headers:{"Content-Type":"application/json"}, body: JSON.stringify(datos)});
+    if(!r.ok) throw new Error((await r.json()).detail || r.statusText);
+    localStorage.removeItem("viabilidad_form");
+    $("#g-nombre").textContent = datos.contacto_nombre || "";
+    $("#g-msg").textContent = `El estudio de viabilidad de ${datos.nombre_empresa} estará listo en unos siete días. Lo veremos juntos en la sesión de roadmap.`;
+    $("#revision").classList.add("hidden"); $("#gracias").classList.remove("hidden");
+    scrollTo({top:0, behavior:"smooth"});
+  }catch(err){
+    btn.disabled = false; btn.textContent = "Enviar";
+    alert("Ups, algo falló al enviar: " + err);
+  }
+});
+
+function escapeHtml(s){
+  return String(s).replace(/[&<>"']/g, m => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[m]));
+}
+
+// persistencia ligera
+const LS = "viabilidad_form";
+function guardar(){ try{ localStorage.setItem(LS, JSON.stringify(recoger())); }catch(e){} }
+function restaurar(){
+  let d; try{ d = JSON.parse(localStorage.getItem(LS)||"null"); }catch(e){ return; }
+  if(!d) return;
+  ["nombre_empresa","municipio","web","plantilla","cliente_principal","descripcion",
+   "herramientas_detalle","intentos_previos","cuello_botella","horas_semana","personas_tarea",
+   "frecuencia","rol_ejecutor","ejemplos_historicos","restricciones_detalle","capacidad_deseada",
+   "referente","notas_p1","notas_p2","notas_p3","notas_p4","contacto_nombre","contacto_email"]
+   .forEach(k=>{ const el=$("#"+k); if(el&&d[k]!=null) el.value=d[k]; });
+  if(d.fisico_digital!=null){ slider.value=d.fisico_digital; pintaSlider(); }
+  ["info_vive","consecuencia_error","coste_verificacion","criterio_experto","validacion",
+   "dependencia_clave"].forEach(name=>{
+    if(!d[name]) return;
+    const r=document.querySelector(`#${name} input[value="${CSS.escape(d[name])}"]`); if(r) r.checked=true;
+  });
+  [["#areas","areas_internas"],["#herramientas","herramientas"],["#entrada_formato","entrada_formato"],["#restricciones","restricciones"]]
+   .forEach(([sel,k])=>{ (d[k]||[]).forEach(v=>{
+     const c=[...document.querySelectorAll(sel+' input')].find(x=>x.value===v); if(c) c.checked=true; }); });
+}
+$("#form").addEventListener("input", guardar);
+$("#form").addEventListener("change", guardar);
+
+restaurar();
+mostrarPaso(1);
+</script>
+</body>
+</html>

@@ -1,0 +1,151 @@
+# ROL
+ESTRUCTURAS un informe de research ya hecho. NO investigas ni opinas por tu cuenta:
+lees el informe (7 apartados) y el formulario, y rellenas un esquema con lo que el
+informe DICE, respaldado por sus fuentes. Si el informe no aporta un dato, usa la
+estimación más conservadora. No inventes cifras.
+
+Todo el texto que escribas va en ESPAÑOL, tono profesional y directivo (habla el
+idioma de quien decide, no jerga técnica). ESCRIBE NATURAL Y SOBRIO: frases llanas,
+verbos normales ("necesita", "requiere", "conviene"), nada de grandilocuencia ni
+verbos rimbombantes ("demanda instaurar", "avala", "sanciona", "exige ejecutar
+urgentemente" están PROHIBIDOS). Como lo diría un buen consultor en una reunión, no
+como un boletín oficial. Respeta los LÍMITES de longitud: son huecos de un PDF
+maquetado; pasarse rompe el diseño.
+
+PROHIBIDO en cualquier campo: las palabras "brief", "formulario", "cuestionario",
+"prompt", "extracción" o cualquier referencia a cómo se ha producido el informe. El
+lector es el director de la empresa y recibe un estudio, no el resultado de un
+proceso. Cuando necesites aludir a lo que la empresa contó, escribe "la información
+facilitada por la empresa" o "la conversación con la dirección".
+
+# INFORME DE DEEP RESEARCH
+{{INFORME}}
+
+# FORMULARIO DE LA EMPRESA
+{{BRIEF}}
+
+# CAMPOS A RELLENAR
+(El informe tiene 8 apartados, numerados 0-7.)
+
+- sector: el sector de la empresa, conciso (MÁX. 6 palabras).
+
+- ficha_bullets: 4-6 viñetas TELEGRÁFICAS del apartado 0 (Perfil detectado), MÁX. 7
+  palabras cada una. Ej.: "Empresa industrial de Dos Hermanas" · "14 empleados" ·
+  "Cliente principal: grandes empresas" · "Operativa apoyada en ERP y Excel".
+- ficha_fuentes: una línea con las fuentes del perfil, separadas por " · " (ej. "web
+  corporativa · LinkedIn · directorios empresariales"). Si el perfil se apoya solo en lo
+  que contó la empresa, escribe "información facilitada por la empresa · contexto
+  sectorial de la provincia de Sevilla" (nunca "brief" ni "formulario"). Si el
+  informe no indica fuentes del perfil, deja el campo vacío.
+
+- potencial_nivel (1-5) y potencial_razones: del inicio del apartado 1 del informe.
+  Es la lectura ESTRUCTURAL del negocio (repetitividad, volumen de datos, coste
+  laboral, frecuencia de decisiones, calidad de la información) — NO un resumen de
+  las oportunidades. potencial_razones: las 2-3 razones más sobresalientes, MÁX. 32
+  palabras.
+
+- retorno_categoria: UNA sola palabra, CUANTITATIVA — cuánto pesan las tareas del Top
+  3 dentro del esfuerzo total de la empresa. Exactamente una de (de menor a mayor
+  peso): marginales · menores · significativas · dominantes · masivas.
+- retorno_desc: frase corta (MÁX. 22 palabras) que CONTINÚA GRAMATICALMENTE la
+  oración "en tareas [categoría] — …". Léela entera antes de darla por buena: tiene
+  que sonar natural. Ej.: "en tareas dominantes — las que hoy concentran más horas de
+  técnico y donde los precedentes reportan el mayor ahorro directo". Debe dejar claro
+  que el % es REDUCCIÓN DE TIEMPO en esas tareas (no retorno financiero).
+
+- adopcion_pct: % de empresas del sector que ya adoptan IA (apartado 6). ENTERO
+  0-100, sin símbolo ni decimales.
+
+- oportunidades: TODAS las de la cartera del apartado 1 (6-8), en el MISMO orden del
+  informe. Por cada una:
+    · nombre: MÁX. 6 palabras.
+    · descripcion: 1 línea (MÁX. 12 palabras). Si es el cuello de botella declarado
+      y quedó fuera del Top 3, la descripción refleja el motivo en pocas palabras
+      (ej. "verificarla costaría tanto como hacerla").
+    · roi y viabilidad: los enteros 1-10 que da el informe, tal cual. NO los
+      recalcules ni los suavices.
+    · reduccion_min / reduccion_max: el rango % de reducción de tiempo (enteros). Si
+      el informe la marca como "actividad nueva", pon 0 y 0.
+    · tarea_actual: true si la empresa YA realiza hoy esa tarea; false si la
+      oportunidad crea una actividad nueva (el informe lo indica).
+    · aborda_cuello_botella: true solo si la oportunidad ataca directamente el cuello
+      de botella declarado por la empresa.
+    · horas_mes: si el informe da horas liberadas al mes (o se deducen de la carga
+      actual y el % de reducción), el rango como texto corto, ej. "96-112 al mes";
+      si no, vacío. No inventes.
+    · horas_base: de dónde sale horas_mes, en MÁX. 30 palabras: el dato de la reunión que
+      se usa (horas, personas) y el % documentado; o, si no hay dato, el promedio
+      publicado (con su autor) y el supuesto de volumen. Vacío si horas_mes está vacío.
+    · via: cómo se resuelve, exactamente una de: "herramienta existente" (configurar
+      un producto del mercado), "formación" (la herramienta existe, falta usarla bien)
+      o "a medida" (sistema propio integrado). Si el informe no lo dice, deduce de la
+      descripción: pipelines y RAG sobre datos propios son "a medida"; OCR de facturas
+      en el ERP o rastreo de licitaciones son "herramienta existente".
+    · problema: 2-3 frases (MÁX. 35 palabras) con el dolor operativo. Para las 3 de
+      mayor ROI×Viabilidad usa el detalle del informe; para el resto derívalo de su
+      descripción, conservador.
+    · necesita: 2-3 elementos, elegidos del catálogo de ELEMENTOS A CUIDAR del
+      informe (guardarraíles y control de salida · calidad y estructuración de datos
+      · integración con sistemas actuales · marco regulatorio · supervisión humana ·
+      cultura de adopción · base de conocimiento actualizada · piloto acotado), cada
+      uno aterrizado en MÁX. 8 palabras. REGLA: si la vía es "herramienta existente",
+      NUNCA "guardarraíles y control de salida" (eso es de sistema propio); lo que
+      necesita una herramienta existente es configuración (criterios, permisos),
+      integración, datos limpios, base documental al día, formación o decisión humana.
+
+- condiciones: EXACTAMENTE 3 (apartado 4 — Riesgos), las más relevantes del caso.
+  Por cada una: titulo (MÁX. 3 palabras, del catálogo) y descripcion (1-2 frases,
+  MÁX. 22 palabras, aterrizada a esta empresa).
+
+- req_infra, req_datos, req_adopcion: del apartado 5 (Requisitos previos). MÁX. 35
+  palabras cada uno. Incluye la estrategia si la empresa aún no lo tiene (ej. "si la
+  información está dispersa, primero una fase de curación"). Usa lo que el BRIEF dice
+  de dónde vive su información y quién ejecuta la tarea.
+
+- cump_aislamiento, cump_normativa, cump_trazabilidad: 1-2 frases cada uno (MÁX. 22
+  palabras), MODULADOS por las RESTRICCIONES declaradas en el BRIEF:
+    · "Datos sensibles" / "Información confidencial" → endurece el aislamiento
+      (entorno acotado, datos que no salen, sin entrenar modelos públicos).
+    · "Requisitos regulatorios" → concreta la normativa aplicable (RGPD, marco
+      europeo de IA, la sectorial que cite el informe).
+    · "Procesos certificados" → la trazabilidad debe soportar auditorías de su
+      certificación (quién generó qué, con qué datos, bajo qué criterio).
+    · "Ninguna relevante" o vacío → versión estándar y ligera de los tres.
+
+- no_basta: 2-3 frases (MÁX. 45 palabras) que expliquen por qué la intervención de mayor
+  retorno no se resuelve con una herramienta comercial: qué tiene ESTA empresa (su
+  histórico, sus plantillas, su trazabilidad, su vocabulario) que ninguna herramienta
+  trae de serie y sobre lo que hay que construir. Concreto y suyo, no genérico.
+- llega: 3 frases (MÁX. 16 palabras cada una), honestas, con lo que SÍ hace hoy una
+  herramienta existente (un cuaderno de IA sobre documentos subidos a mano) para la
+  intervención de mayor prioridad: para una persona, un proyecto, unas decenas de
+  documentos. Incluye siempre una del tipo "comprobar el valor en una semana antes de
+  construir nada".
+- limites: 3-4 límites por los que esa intervención SÍ requiere sistema propio. Usa
+  estos títulos si aplican: "Escala", "Formato", "Trazabilidad", "Uso compartido".
+  Para cada uno: herramienta (qué pasa con una herramienta existente, MÁX. 22
+  palabras) y a_medida (qué hace el sistema propio en su lugar, MÁX. 22 palabras).
+  Concreto y de esta empresa: sus documentos, su formato, su certificación, su gente.
+- construccion: 5 pasos de construcción del sistema propio (MÁX. 9 palabras cada uno),
+  en orden: indexar el histórico · extraer lo que pide cada caso · generar sobre la
+  plantilla · validar con reglas y persona · registrar.
+- camino_intro: UNA frase (MÁX. 30 palabras) que diga por qué la oportunidad de mayor
+  retorno es a medida (qué tiene la empresa que ninguna herramienta trae de serie) y
+  que el camino empieza por la inversión mínima.
+- plan: EXACTAMENTE 3 pasos, en este orden y con estos plazos: (1) "Herramientas
+  existentes", plazo "Semanas": las oportunidades de vía "herramienta existente";
+  (2) "Piloto de la primera intervención", plazo "4-8 semanas": la de mayor prioridad
+  sobre datos reales, con criterio de parada; (3) "Sistema en producción", plazo
+  "2-4 meses": esa intervención integrada y después las otras dos del Top 3. Por
+  paso: cubre (qué oportunidades, MÁX. 14 palabras), que_es (MÁX. 18), desbloquea
+  (MÁX. 16; en el paso 1 es siempre "un dictamen de encaje: qué herramienta y cómo
+  configurarla para vuestra normativa"), y los requisitos DE ESE PASO: req_infra,
+  req_datos, req_adopcion (MÁX. 18 palabras cada uno, aterrizados al caso: el paso 1
+  va de licencias, permisos heredados y formación por puesto; el 2 de entorno aislado
+  e histórico curado; el 3 de integración, gobierno del dato y escalado).
+- fuentes: las fuentes del apartado 7 (MÁX. 8), cada una con: autor (medio/autor),
+  titulo, anio (si se sabe), tipo (exactamente una de: institucional · académica ·
+  prensa · proveedor) y descripcion (1 frase corta con el dato que aporta). Ordena:
+  institucionales y académicas primero; las de proveedor al final y solo si aportan
+  un precedente concreto. Nada de vídeos ni blogs sin autor. Solo fuentes reales del
+  informe; si no hay, lista vacía.

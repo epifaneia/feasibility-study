@@ -1,0 +1,792 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Estudio de viabilidad de IA</title>
+<!--
+  PLANTILLA DE ENTREGA · Reporte de viabilidad y ROI de IA
+  Informe en 3 capas de lectura (Direccion / Operaciones / Equipo tecnico). 8 paginas A4.
+  Lenguajes: HTML + CSS (estatico, sin JS). Fuentes del sistema (Georgia + Arial).
+  @page A4 + @media print para PDF.
+
+  CONVENCION DE HUECOS:
+    FIJO (candado)         -> texto/diseno literal, NO cambia.
+    data-fill              -> hueco de texto. Reemplazar el contenido del elemento.
+    data-fill-type="image" -> caja de imagen. Insertar <img> (PNG).
+  Cada hueco lleva un comentario FILL key="..." y el atributo data-fill.
+-->
+<style>
+  :root{
+    --ink:#3a3d34; --body:#3a3d34; --muted:#5c6152; --faint:#8f9285;
+    --line:#d7ddc9; --line2:#eef1e8; --sage:#8b9a7b;
+    --green:#4c5a2e; --green-d:#3a4622; --tint:#f2f4ec; --tint-line:#d7ddc9;
+    --olive-soft:#c5cfae; --olive-pale:#e4e9d8;
+    --amber:#c58b2e; --red:#b4573a;
+    --paper:#ffffff; --canvas:#eceee7;
+    --serif:Georgia,'Times New Roman',serif;
+    --sans:Arial,Helvetica,sans-serif;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{background:var(--canvas);font-family:var(--sans);color:var(--body);
+       font-size:15px;line-height:1.62;-webkit-font-smoothing:antialiased}
+  a{color:var(--green)}
+  a:hover{color:var(--green-d)}
+
+  .doc{box-sizing:border-box;max-width:none;margin:0;background:transparent;padding:28px 0;
+       display:flex;flex-direction:column;align-items:center;gap:30px}
+
+  h1,h2,h3,h4{text-wrap:balance;margin:0;font-family:var(--serif);font-weight:normal}
+  p,li{text-wrap:pretty;margin:0}
+
+  .page{width:210mm;background:var(--paper);padding:22mm 20mm;min-height:297mm;
+        display:flex;flex-direction:column;position:relative;margin:0;break-after:page;
+        box-shadow:0 1px 3px rgba(60,66,50,.08),0 22px 55px -28px rgba(58,61,52,.32)}
+  .page.last{break-after:auto}
+
+  /* ---- type helpers ---- */
+  .eyebrow{font-family:var(--sans);font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--green);font-weight:bold}
+  .muted{color:var(--muted)}
+  .small{font-size:12.5px}
+  .src{font-family:var(--sans);font-size:10.5px;color:var(--faint)}
+
+  /* ---- fill markers ---- */
+  .hole{text-decoration:underline dotted var(--sage);text-underline-offset:3px;text-decoration-thickness:1.5px;color:var(--ink)}
+  .hole-block{background:linear-gradient(90deg,var(--tint),transparent 72%);border-left:3px solid var(--sage);border-radius:0 4px 4px 0;padding:4px 0 4px 16px}
+  .imgbox{border:1.5px dashed var(--sage);border-radius:8px;background:repeating-linear-gradient(135deg,#f6f8f1,#f6f8f1 9px,#eef1e8 9px,#eef1e8 18px);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;text-align:center;padding:18px;color:var(--muted)}
+  .imgbox .ic{font-size:22px;opacity:.5}
+  .imgbox .nm{font-family:var(--sans);font-size:11px;letter-spacing:.05em;color:var(--green);font-weight:bold}
+  .imgbox .ds{font-size:11px;color:var(--muted);max-width:32ch}
+
+  /* ---- perfil detectado (ficha del Paso 0 del research) ---- */
+  .perfil{border:1px solid var(--line);border-radius:8px;padding:14px 18px;margin-top:18px;background:var(--tint)}
+  .perfil .pf-h{font-family:var(--sans);font-size:11px;font-weight:bold;letter-spacing:.14em;text-transform:uppercase;color:var(--green);margin-bottom:9px}
+  .pf-list{margin:0;padding:0;list-style:none;display:flex;flex-wrap:wrap;gap:6px 16px}
+  .pf-list li{font-size:13px;color:var(--ink)}
+  .pf-list li::before{content:"■";color:var(--sage);font-size:8px;margin-right:7px;vertical-align:2px}
+  .pf-src{margin-top:10px;font-family:var(--sans);font-size:10.5px;color:var(--faint)}
+
+  /* ---- layer opener band ---- */
+  .layer-band{background:var(--green);border-radius:8px;padding:26px 30px;color:#fff;display:flex;align-items:center;gap:26px;position:relative;overflow:hidden}
+  .layer-band::after{content:"";position:absolute;right:-50px;top:-50px;width:180px;height:180px;border-radius:50%;background:radial-gradient(circle,rgba(197,207,174,.16),transparent 70%)}
+  .layer-band .cn{font-family:var(--serif);font-size:60px;line-height:.85;color:var(--olive-soft);flex:0 0 auto}
+  .layer-band .lt{font-family:var(--serif);font-size:27px;color:#fff;line-height:1.12}
+  .layer-band .lr{font-family:var(--sans);font-size:11px;font-weight:bold;letter-spacing:.14em;text-transform:uppercase;color:var(--olive-soft);margin-bottom:8px}
+  .layer-band .ld{font-size:13px;color:var(--olive-pale);margin-top:9px;line-height:1.5;max-width:60ch}
+
+  /* section header */
+  .sec-h{font-family:var(--serif);font-size:22px;color:var(--ink);line-height:1.2}
+  .sec-k{font-family:var(--sans);font-size:11px;font-weight:bold;letter-spacing:.14em;text-transform:uppercase;color:var(--sage);margin-top:26px;margin-bottom:2px}
+
+  /* ---- fertility / potential ---- */
+  .mat{display:grid;grid-template-columns:1fr 1.15fr;gap:22px;margin-top:14px;align-items:stretch}
+  .mat-grade{background:var(--green);border-radius:8px;padding:22px 24px;color:#fff;display:flex;flex-direction:column;justify-content:center}
+  .mat-grade .gl{font-family:var(--sans);font-size:11px;font-weight:bold;letter-spacing:.14em;text-transform:uppercase;color:var(--olive-soft)}
+  .mat-grade .gv{font-family:var(--serif);font-size:40px;line-height:1;margin-top:8px}
+  .mat-grade .gv em{font-style:normal;color:var(--olive-soft);font-size:24px}
+  .seg{display:flex;gap:6px;margin-top:16px}
+  .seg i{height:8px;flex:1;border-radius:3px;background:rgba(255,255,255,.22)}
+  .seg i.on{background:var(--olive-soft)}
+  .mat-grade .gc{font-size:12.5px;color:var(--olive-pale);margin-top:14px;line-height:1.5}
+  .mat-grade .gadj{font-family:var(--serif);font-size:26px;color:#fff;margin-top:18px;line-height:1.05}
+  .fert-why{border:1px solid var(--line);border-radius:8px;padding:20px 22px;display:flex;flex-direction:column;justify-content:center}
+  .fw-k{font-family:var(--sans);font-size:10px;font-weight:bold;letter-spacing:.14em;text-transform:uppercase;color:var(--sage);margin-bottom:14px}
+  .fw-list{list-style:none;padding:0;margin:0}
+  .fw-list li{position:relative;padding-left:20px;font-size:14px;color:var(--body);line-height:1.5;margin-bottom:11px}
+  .fw-list li:last-child{margin-bottom:0}
+  .fw-list li::before{content:"";position:absolute;left:2px;top:8px;width:7px;height:7px;border-radius:2px;background:var(--green)}
+  .legend{margin-top:14px;background:var(--tint);border-left:3px solid var(--sage);border-radius:0 6px 6px 0;padding:14px 16px;display:flex;flex-direction:column;gap:8px}
+  .legend .lg-item{font-family:var(--sans);font-size:12px;color:var(--muted);line-height:1.5}
+  .legend b{color:var(--green)}
+
+  /* ---- retorno block ---- */
+  .retorno{margin-top:14px;background:var(--tint);border:1px solid var(--tint-line);border-radius:8px;padding:24px 28px;display:flex;align-items:center;gap:28px}
+  .retorno .rv{font-family:var(--serif);font-size:58px;line-height:.9;color:var(--green);flex:0 0 auto}
+  .retorno .rl{font-family:var(--sans);font-size:12px;font-weight:bold;letter-spacing:.12em;text-transform:uppercase;color:var(--sage)}
+  .retorno .rd{font-size:14px;color:var(--body);margin-top:8px;line-height:1.55;max-width:46ch}
+  .retorno .rd b{color:var(--green)}
+
+  /* ---- top3 chips ---- */
+  .top3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:14px}
+  .t3{border:1px solid var(--line);border-top:3px solid var(--green);border-radius:0 0 8px 8px;padding:16px 16px;background:#fff}
+  .t3 .tn{font-family:var(--sans);font-size:11px;font-weight:bold;letter-spacing:.1em;text-transform:uppercase;color:var(--sage)}
+  .t3 .tt{font-family:var(--serif);font-size:17px;color:var(--ink);margin-top:8px;line-height:1.2}
+
+  /* ---- condiciones (severity dots) ---- */
+  .cond{margin-top:12px;border:1px solid var(--line);border-radius:8px;padding:4px 20px}
+  .cond-row{padding:14px 0;border-bottom:1px solid var(--line);display:flex;align-items:flex-start;gap:13px}
+  .cond-row:last-child{border-bottom:none}
+  .cond-dot{width:10px;height:10px;border-radius:3px;background:var(--green);flex:0 0 auto;margin-top:5px}
+  .cond-lbl{font-family:var(--sans);font-weight:bold;font-size:13.5px;color:var(--ink)}
+  .cond-desc{font-size:12.5px;color:var(--muted);margin-top:3px;line-height:1.45}
+  .cond-intro{font-size:13.5px;color:var(--body);line-height:1.6;margin-top:6px}
+
+  /* ---- big stat (bofetón) ---- */
+  .bofeton{background:var(--tint);border:1px solid var(--tint-line);border-radius:8px;padding:26px 30px;margin-top:18px}
+  .bofeton .num{font-family:var(--serif);font-size:74px;line-height:.85;color:var(--green)}
+  .bofeton .claim{font-family:var(--serif);font-size:22px;line-height:1.3;color:var(--ink);max-width:36ch;margin-top:12px}
+  .bofeton .src{margin-top:14px}
+  /* twin data boxes: riesgo general (95%) + estado del sector (donut) */
+  .twin{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:18px;align-items:stretch}
+  .twin .tw{border:1px solid var(--tint-line);background:var(--tint);border-radius:8px;padding:20px 22px;display:flex;flex-direction:column}
+  .tw .tw-k{font-family:var(--sans);font-size:10px;font-weight:bold;letter-spacing:.12em;text-transform:uppercase;color:var(--sage);margin-bottom:12px}
+  .tw .tw-n{font-family:var(--serif);font-size:52px;line-height:.85;color:var(--green)}
+  .tw .tw-c{font-family:var(--serif);font-size:16px;line-height:1.3;color:var(--ink);margin-top:12px}
+  .tw .tw-s{font-family:var(--sans);font-size:10px;color:var(--faint);margin-top:auto;padding-top:12px}
+  .sector-in{display:flex;gap:18px;align-items:center}
+  .donut{width:104px;height:104px;border-radius:50%;flex:0 0 auto;display:flex;align-items:center;justify-content:center;background:conic-gradient(var(--green) 0 62%, #d7ddc9 62% 100%)}
+  .donut-hole{width:68px;height:68px;border-radius:50%;background:var(--tint);display:flex;align-items:center;justify-content:center;font-family:var(--serif);font-size:23px;color:var(--green)}
+  .sector-txt .binary{font-family:var(--serif);font-size:21px;color:var(--green);line-height:1.15;margin-top:8px}
+
+  /* ---- espejismo contrast ---- */
+  .vias{display:grid;grid-template-columns:1fr;gap:12px;margin-top:16px}
+  .nobasta{margin-top:12px;background:var(--green);color:#fff;border-radius:8px;padding:22px 24px}
+  .nb-big{font-family:var(--serif);font-size:19px;line-height:1.4;color:#fff}
+  .nb-puente{margin-top:16px;padding-top:14px;border-top:1px solid rgba(255,255,255,.25);font-size:13.5px;line-height:1.5;color:var(--olive-pale);display:flex;gap:10px;align-items:flex-start}
+  .nb-puente .sw{flex:none;width:14px;height:14px;border-radius:3px;background:#FBF3E6;border:1px solid var(--amber);margin-top:3px}
+  .vias-mini{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-top:10px}
+  .vias-mini div{background:var(--tint);border-radius:6px;padding:10px 12px;font-size:12px;color:var(--body);line-height:1.45}
+  .vias-mini b{color:var(--green);display:block;font-family:var(--serif);font-size:14px;margin-bottom:2px}
+  .via.wide{grid-column:1 / -1;border-left:3px solid var(--green)}
+  .via .puerta{margin-top:12px}
+  .via .puerta b{color:var(--green)}
+  .via .cierre{margin-top:12px;font-family:var(--serif);font-size:16.5px;color:var(--green);line-height:1.35}
+  .via{background:var(--tint);border-radius:8px;padding:16px 18px}
+  .via .vh{font-family:var(--serif);font-size:17px;color:var(--green);margin-bottom:6px}
+  .via p{font-size:13.5px;color:var(--body);line-height:1.6}
+  .contrast{display:grid;grid-template-columns:1fr 1fr;gap:0;margin-top:16px}
+  .contrast .cc{padding:20px 22px}
+  .contrast .cc.left{background:var(--tint);border-radius:8px 0 0 8px}
+  .contrast .cc.right{background:var(--green);border-radius:0 8px 8px 0;color:#fff}
+  .contrast .ch{font-family:var(--sans);font-size:11px;font-weight:bold;letter-spacing:.12em;text-transform:uppercase;margin-bottom:12px}
+  .contrast .left .ch{color:var(--red)}
+  .contrast .right .ch{color:var(--olive-soft)}
+  .contrast h4{font-family:var(--serif);font-size:19px;line-height:1.25}
+  .contrast .left h4{color:var(--ink)}
+  .contrast .right h4{color:#fff}
+  .contrast p{font-size:13.5px;line-height:1.6;margin-top:10px}
+  .contrast .left p{color:var(--body)}
+  .contrast .right p{color:var(--olive-pale)}
+
+  /* ---- matriz ---- */
+  table.matriz{width:100%;border-collapse:collapse;margin-top:16px;font-size:13px}
+  table.matriz thead th{font-family:var(--sans);font-size:10px;font-weight:bold;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);text-align:left;padding:9px 10px;border-bottom:2px solid var(--green)}
+  table.matriz thead th.n{text-align:center}
+  table.matriz tbody td{padding:9px 8px;border-bottom:1px solid var(--line);vertical-align:middle}
+  table.matriz td.via,table.matriz th.via{white-space:nowrap;font-size:11px;color:var(--muted);width:96px;padding-left:6px;white-space:normal;line-height:1.2}
+
+  table.matriz tbody td.n{text-align:center;font-family:var(--serif);font-size:15px;color:var(--green)}
+  table.matriz .proj{font-weight:bold;color:var(--ink);font-family:var(--sans);font-size:13.5px}
+  table.matriz .proj .pd{font-weight:normal;color:var(--muted);font-size:12px;margin-top:2px}
+  table.matriz tr.is-top td{background:var(--tint)}
+  table.matriz tr.is-tool td{background:#FBF3E6}
+  table.matriz tr.is-tool td.via{color:var(--amber);font-weight:bold}
+  .camino{margin-top:22px}
+  .camino-intro{margin-top:14px;font-size:14px;color:var(--body);line-height:1.55;max-width:70ch}
+  .axis{position:relative;height:34px;margin:16px 6px 4px}
+  .ax-line{position:absolute;left:0;right:0;top:9px;height:2px;background:var(--olive-soft)}
+  .ax-m{position:absolute;top:0;transform:translateX(-50%);text-align:center;white-space:nowrap}
+  .ax-m i{display:block;width:12px;height:12px;border-radius:50%;background:var(--green);margin:4px auto 0;border:2px solid var(--paper);box-shadow:0 0 0 1px var(--olive-soft)}
+  .ax-m span{display:block;font-family:var(--sans);font-size:10px;font-weight:bold;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-top:4px}
+  .pasos{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-top:26px}
+  .camino-no{margin-top:22px;padding:14px 18px;background:var(--tint);border-left:3px solid var(--green);border-radius:0 8px 8px 0;font-family:var(--serif);font-size:14.5px;color:var(--ink);line-height:1.5}
+  .paso{border:1px solid var(--line);border-top:3px solid var(--green);border-radius:8px;padding:16px 16px 14px;background:var(--paper)}
+  .paso .pn{font-family:var(--serif);font-size:26px;color:var(--green);line-height:1}
+  .paso .pt{font-family:var(--serif);font-size:15px;color:var(--ink);margin:2px 0 8px;line-height:1.2}
+  .paso .pk{font-family:var(--sans);font-size:9.5px;font-weight:bold;letter-spacing:.1em;text-transform:uppercase;color:var(--sage);margin-top:7px}
+  .paso p{font-size:12.5px;color:var(--body);line-height:1.5;margin-top:2px}
+  .paso p.pdes{color:var(--ink);font-weight:bold}
+  .llega-box{margin-top:14px;background:var(--tint);border-radius:8px;padding:16px 18px}
+  .llega-box .lb-k{font-family:var(--sans);font-size:10px;font-weight:bold;letter-spacing:.12em;text-transform:uppercase;color:var(--sage);margin-bottom:8px}
+  .llega{position:relative;padding:5px 0 5px 22px;font-size:13.5px;color:var(--ink);line-height:1.5}
+  .llega::before{content:"\2713";position:absolute;left:0;top:5px;color:var(--green);font-weight:bold}
+  .limites{margin-top:10px;border-top:2px solid var(--green)}
+  .lim-h,.lim{display:grid;grid-template-columns:120px 1fr 1fr;gap:14px;align-items:start}
+  .lim-h span{font-family:var(--sans);font-size:10px;font-weight:bold;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);padding:8px 0 6px}
+  .lim{padding:11px 0;border-top:1px solid var(--line)}
+  .lim .lt{font-family:var(--serif);font-size:15px;color:var(--ink)}
+  .lim .lh{font-size:12.5px;color:var(--muted);line-height:1.5}
+  .lim .lm{font-size:12.5px;color:var(--ink);line-height:1.5}
+  .cpasos{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-top:10px}
+  .cstep{background:var(--green);color:#fff;border-radius:6px;padding:10px 10px;font-size:11px;line-height:1.35}
+  .cstep b{display:block;font-family:var(--serif);font-size:18px;color:var(--olive-soft);margin-bottom:3px}
+  .empezar{margin-top:14px;background:var(--green);color:#fff;border-radius:8px;padding:16px 18px;font-size:13px;line-height:1.55}
+  .empezar .rl{font-family:var(--sans);font-size:10px;font-weight:bold;letter-spacing:.12em;text-transform:uppercase;color:var(--olive-soft);margin-bottom:6px}
+  .empezar b{color:#fff}
+  .lg-item .sw{display:inline-block;width:11px;height:11px;border-radius:2px;vertical-align:-1px;margin-right:6px;border:1px solid var(--line)}
+  .scorecell{display:flex;align-items:center;gap:8px;min-width:96px}
+  .scorebar{flex:1;height:7px;background:var(--line2);border-radius:4px;overflow:hidden}
+  .scorebar i{display:block;height:100%;background:var(--green);border-radius:4px}
+  .scoreval{font-family:var(--serif);font-size:14px;color:var(--green);flex:0 0 auto;width:34px;text-align:right}
+  .formula{margin-top:14px;font-family:var(--sans);font-size:12px;color:var(--muted);background:var(--tint);border-left:3px solid var(--sage);border-radius:0 6px 6px 0;padding:11px 14px}
+  .formula b{color:var(--green)}
+  .bridge{margin-top:14px;font-size:14px;color:var(--body);line-height:1.6}
+  .bridge b{color:var(--green)}
+
+  /* ---- mapeo solucion cards ---- */
+  .mapeo{display:flex;flex-direction:column;gap:14px;margin-top:16px}
+  .msol{border:1px solid var(--line);border-radius:8px;overflow:hidden}
+  .msol-h{background:var(--tint);padding:13px 18px;display:flex;align-items:center;gap:14px;border-bottom:1px solid var(--line)}
+  .msol-h .mn{width:30px;height:30px;border-radius:50%;background:var(--green);color:#fff;font-family:var(--sans);font-weight:bold;font-size:14px;display:flex;align-items:center;justify-content:center;flex:0 0 auto}
+  .msol-h .mt{font-family:var(--serif);font-size:18px;color:var(--ink)}
+  .msol-b{padding:16px 18px;display:grid;grid-template-columns:1fr 1fr;gap:18px}
+  .msol-b .blk .bk{font-family:var(--sans);font-size:10px;font-weight:bold;letter-spacing:.1em;text-transform:uppercase;color:var(--sage);margin-bottom:6px}
+  .msol-b .blk p{font-size:13px;color:var(--body);line-height:1.55}
+  .mn.tool{background:var(--amber)}
+  .msol-b.with-horas{grid-template-columns:1.4fr .7fr 1fr}
+  .msol-b .blk.horas .hv{font-family:var(--serif);font-size:22px;color:var(--green);line-height:1.1}
+  .msol-b .blk.horas .hb{font-size:10.5px;color:var(--faint);line-height:1.4;margin-top:6px}
+  .horas-nota{margin-top:14px;font-size:11px;color:var(--faint);line-height:1.5;max-width:80ch}
+  .msol-b .needs{list-style:none;padding:0;margin:0}
+  .msol-b .needs li{position:relative;padding-left:18px;font-size:13px;color:var(--body);line-height:1.5;margin-bottom:6px}
+  .msol-b .needs li::before{content:"";position:absolute;left:2px;top:7px;width:7px;height:7px;border-radius:2px;background:var(--green)}
+
+  /* ---- requirement list ---- */
+  .reqgrid{display:grid;grid-template-columns:110px 1fr 1fr 1fr;gap:0;margin-top:12px;border-top:2px solid var(--green)}
+  .reqgrid .rg-h{padding:10px 10px 8px;border-bottom:1px solid var(--line)}
+  .reqgrid .rg-h b{display:block;font-family:var(--sans);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--green)}
+  .reqgrid .rg-h span{font-family:var(--serif);font-size:14px;color:var(--ink)}
+  .reqgrid .rg-k{padding:12px 10px 12px 0;font-family:var(--serif);font-size:14px;color:var(--ink);border-bottom:1px solid var(--line)}
+  .reqgrid .rg-c{padding:12px 10px;font-size:12px;color:var(--body);line-height:1.5;border-bottom:1px solid var(--line)}
+  .reqs{display:flex;flex-direction:column;gap:0;margin-top:8px}
+  .req{display:grid;grid-template-columns:200px 1fr;gap:20px;padding:16px 0;border-top:1px solid var(--line);align-items:start}
+  .req:last-child{border-bottom:1px solid var(--line)}
+  .req .rq-h{font-family:var(--serif);font-size:16px;color:var(--ink)}
+  .req .rq-h .rq-k{display:block;font-family:var(--sans);font-size:10px;font-weight:bold;letter-spacing:.1em;text-transform:uppercase;color:var(--sage);margin-bottom:5px}
+  .req .rq-b{font-size:13.5px;color:var(--body);line-height:1.6}
+  .req .rq-b b{color:var(--green)}
+
+  /* ---- cumplimiento cards ---- */
+  .foso{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:16px}
+  .foso .fc{border:1px solid var(--line);border-radius:8px;padding:18px 18px;background:var(--tint)}
+  .foso .fc .fh{font-family:var(--serif);font-size:16px;color:var(--green);line-height:1.2}
+  .foso .fc p{font-size:12.5px;color:var(--body);margin-top:8px;line-height:1.55}
+
+  /* ---- metodología / sources ---- */
+  .meto{margin-top:12px;max-width:66ch;color:var(--body);font-size:14px;line-height:1.7}
+  .meto-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px 18px;margin-top:8px;font-size:12px;color:var(--body);line-height:1.5}
+  .meto-grid b{color:var(--ink)}
+  .meto b{color:var(--green)}
+  .src-list{margin:12px 0 0;padding:0;list-style:none;counter-reset:s}
+  .src-list li{position:relative;padding:12px 0 12px 40px;border-top:1px solid var(--line);font-size:13px;color:var(--body);line-height:1.55}
+  .src-list li:last-child{border-bottom:1px solid var(--line)}
+  .src-list li::before{counter-increment:s;content:counter(s,decimal-leading-zero);position:absolute;left:0;top:13px;font-family:var(--sans);font-size:11px;font-weight:bold;color:var(--green)}
+  .src-list b{color:var(--ink);font-weight:bold}
+  .src-list .yr{font-family:var(--sans);color:var(--faint);font-size:11px}
+  .src-fixed{margin-top:12px;background:var(--tint);border-left:3px solid var(--green);border-radius:0 8px 8px 0;padding:14px 16px;font-size:13px;color:var(--body);line-height:1.55}
+  .src-fixed .rl{font-family:var(--sans);font-size:10px;font-weight:bold;letter-spacing:.12em;text-transform:uppercase;color:var(--green);margin-bottom:6px}
+  .src-fixed b{color:var(--ink);font-weight:bold}
+
+  /* ---- cover ---- */
+  .p1-top{display:flex;justify-content:flex-start;align-items:center}
+  .p1-center{margin-top:auto;margin-bottom:auto;padding:20px 0}
+  .p1-band{background:var(--green);border-radius:6px;padding:32px 36px;margin-top:8px}
+  .p1-band .eyebrow{color:var(--olive-soft)}
+  .p1-title{font-family:var(--serif);font-size:42px;line-height:1.1;color:#fff;margin-top:14px}
+  .p1-sector{font-family:var(--sans);font-size:15px;color:var(--olive-pale);margin-top:16px;letter-spacing:.02em}
+  .guide{margin-top:30px}
+  .guide-h{font-family:var(--sans);font-size:11px;font-weight:bold;letter-spacing:.14em;text-transform:uppercase;color:var(--sage);margin-bottom:12px}
+  .guide-row{display:grid;grid-template-columns:70px 150px 1fr;gap:16px;align-items:baseline;padding:13px 0;border-top:1px solid var(--line)}
+  .guide-row:last-child{border-bottom:1px solid var(--line)}
+  .guide-row .gc{font-family:var(--serif);font-size:22px;color:var(--green)}
+  .guide-row .gwho{font-family:var(--sans);font-size:12px;font-weight:bold;letter-spacing:.06em;text-transform:uppercase;color:var(--ink)}
+  .guide-row .gwhat{font-size:13.5px;color:var(--muted);line-height:1.5}
+
+  .next{margin-top:22px;background:var(--green);color:#fff;border-radius:8px;padding:16px 18px;font-size:13px;line-height:1.55}
+  .next .rl{font-family:var(--sans);font-size:10px;font-weight:bold;letter-spacing:.12em;text-transform:uppercase;color:var(--olive-soft);margin-bottom:6px}
+  .next p{color:#fff}
+  .next b{color:#fff;font-weight:bold}
+  .next-c{margin-top:10px;font-family:var(--sans);font-size:12px;color:var(--olive-pale)}
+  .next-c .sep{margin:0 8px;color:var(--olive-soft)}
+
+  @page{size:A4;margin:0}
+  @media print{
+    html{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+    html,body{margin:0;padding:0;background:#fff}
+    .doc{max-width:none!important;margin:0!important;padding:0!important;gap:0!important}
+    .page{width:auto!important;margin:0!important;box-shadow:none!important;min-height:auto;height:297mm;padding:16mm}
+    .page.last{break-after:auto}
+    .screen-only{display:none!important}
+    h2,h3,h4{break-after:avoid}
+    .imgbox,.retorno,.msol,.req,.foso .fc,.bofeton,.mat,.cond,tr{break-inside:avoid}
+  }
+</style>
+</head>
+<body>
+<main class="doc">
+
+  <!-- =================================================================== -->
+  <!-- ===================== PORTADA ===================================== -->
+  <!-- =================================================================== -->
+  <section class="page">
+    <div class="p1-top"></div>
+
+    <div class="p1-center">
+      <div class="p1-band">
+        <!-- 🔒 FIJO · antetítulo -->
+        <div class="eyebrow">Estudio de viabilidad de IA</div>
+        <!-- ⚙️ FILL key="nombre_empresa" -->
+        <h1 class="p1-title">Estudio de viabilidad para <span class="hole" data-fill="nombre_empresa" style="color:#fff;text-decoration-color:var(--olive-soft)">Nombre Empresa S.L.</span></h1>
+        <!-- ⚙️ FILL key="sector" -->
+        <div class="p1-sector">Sector: <span class="hole" data-fill="sector" style="color:#fff;text-decoration-color:var(--olive-soft)">Logística y distribución</span></div>
+      </div>
+
+      <!-- ⚙️ FILL key="perfil_bullets" (4-6 viñetas telegráficas de la ficha) + key="perfil_fuentes" (línea de fuentes o suposiciones) -->
+      <div class="perfil" style="margin-top:24px">
+        <div class="pf-h">Perfil de la empresa</div>
+        <ul class="pf-list" data-fill="perfil_bullets">
+          <li>Empresa industrial de Sevilla</li>
+          <li>18 empleados</li>
+          <li>Cliente principal: grandes empresas</li>
+          <li>Operativa apoyada en ERP y Excel</li>
+          <li>Alta dependencia documental</li>
+        </ul>
+        <div class="pf-src">Fuentes: <span data-fill="perfil_fuentes">web corporativa · LinkedIn · directorios empresariales</span></div>
+      </div>
+
+      <!-- 🔒 FIJO · guía de lectura (las 3 capas) -->
+      <div class="guide">
+        <div class="guide-h">Cómo leer este informe · 3 capas de profundidad</div>
+        <div class="guide-row"><div class="gc">01</div><div class="gwho">Dirección</div><div class="gwhat">Resumen ejecutivo. En un vistazo: cuánto potencial hay, el retorno sobre la mesa y las 3 intervenciones prioritarias.</div></div>
+        <div class="guide-row"><div class="gc">02</div><div class="gwho">Operaciones</div><div class="gwhat">El tablero de juego. La matriz de oportunidades, las 3 intervenciones prioritarias, hasta dónde llega una herramienta existente, lo que se puede abordar ya y el camino en tres pasos.</div></div>
+        <div class="guide-row"><div class="gc">03</div><div class="gwho">Equipo técnico</div><div class="gwhat">El detalle. Requisitos, condiciones a asegurar, cumplimiento y datos, y cómo se ha elaborado el análisis.</div></div>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- =================================================================== -->
+  <!-- ============ CAPA 1 · RESUMEN EJECUTIVO (Dirección) ============== -->
+  <!-- =================================================================== -->
+  <section class="page">
+    <!-- 🔒 FIJO · opener de capa -->
+    <div class="layer-band">
+      <div class="cn">01</div>
+      <div>
+        <div class="lr">Nivel de lectura · Dirección</div>
+        <div class="lt">Resumen ejecutivo</div>
+        <div class="ld">Lo esencial para decidir: cuánto potencial tiene vuestro negocio, el retorno que está sobre la mesa y por dónde empezar.</div>
+      </div>
+    </div>
+
+    <!-- Potencial de oportunidad (fertilidad del negocio) -->
+    <div class="sec-k">El punto de partida</div>
+    <h2 class="sec-h">Potencial de oportunidad</h2>
+    <div class="mat">
+      <!-- ⚙️ FILL key="potencial_nivel" (1-5, ajustar segmentos .on) + key="potencial_adjetivo" (el nivel en una palabra) + key="potencial_razones" (razones más destacadas de esa conclusión) -->
+      <div class="mat-grade">
+        <div class="gl">Potencial de oportunidad</div>
+        <div class="gv"><span data-fill="potencial_nivel">Nivel 4</span> <em>/ 5</em></div>
+        <div class="seg" data-fill="potencial_seg"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i></div>
+        <div class="gadj" data-fill="potencial_adjetivo">Excelente</div>
+        <div class="gc" data-fill="potencial_razones">Alta repetitividad de procesos y gran volumen de datos operativos, con numerosas tareas de bajo valor claramente automatizables.</div>
+      </div>
+      <!-- 🔒 FIJO · criterios de puntuación -->
+      <div class="fert-why">
+        <div class="fw-k">Basado en</div>
+        <ul class="fw-list">
+          <li>Repetitividad de procesos</li>
+          <li>Volumen de datos</li>
+          <li>Coste laboral asociado</li>
+          <li>Frecuencia de decisiones</li>
+          <li>Calidad de la información disponible</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Retorno esperado (en %) -->
+    <div class="sec-k">El retorno esperado</div>
+    <h2 class="sec-h">Lo que está sobre la mesa</h2>
+    <div class="retorno">
+      <!-- ⚙️ FILL key="retorno_pct" + key="retorno_categoria" (adjetivo de tamaño, vendrá del JSON) -->
+      <div class="rv"><span data-fill="retorno_pct">75</span>%</div>
+      <div>
+        <div class="rl">Reducción de tiempo estimada</div>
+        <!-- ⚙️ FILL key="retorno_desc" -->
+        <div class="rd">en tareas <b data-fill="retorno_categoria">[categoría]</b> — <span data-fill="retorno_desc">las de gran volumen y baja variación, donde la IA aporta el retorno más rápido y directo.</span></div>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- ====== CAPA 1 (continuación) · Top 3 + Condiciones =============== -->
+  <section class="page">
+    <div class="sec-k" style="margin-top:0">Capa 01 · Dirección</div>
+
+    <!-- Top 3 -->
+    <div class="sec-k" style="margin-top:22px">Top 3 de intervenciones</div>
+    <h2 class="sec-h">Por dónde empezar</h2>
+    <!-- ⚙️ FILL key="top3" · las 3 intervenciones mejor puntuadas (nombre corto) -->
+    <div class="top3" data-fill="top3">
+      <div class="t3"><div class="tn">Intervención 01</div><div class="tt">Atención al cliente multilingüe</div></div>
+      <div class="t3"><div class="tn">Intervención 02</div><div class="tt">Generación de informes financieros</div></div>
+      <div class="t3"><div class="tn">Intervención 03</div><div class="tt">Optimización logística</div></div>
+    </div>
+
+    <!-- Condiciones a asegurar (sustituye a la garantía; diagnóstico honesto) -->
+    <div class="sec-k">Condiciones a asegurar</div>
+    <h2 class="sec-h">Qué hay que cuidar para materializarlo</h2>
+    <!-- 🔒 FIJO intro -->
+    <p class="cond-intro">Estas condiciones no anulan el potencial, pero deben asegurarse para convertirlo en resultados. Las tres son igualmente necesarias.</p>
+    <!-- ⚙️ FILL key="condiciones" · una fila por condición (título + descripción). Derivar del caso: regulación si es proceso crítico, datos si están dispersos, cultura de adopción, etc. -->
+    <div class="cond" data-fill="condiciones">
+      <div class="cond-row">
+        <span class="cond-dot"></span>
+        <div><div class="cond-lbl" data-fill="cond1_lbl">Marco regulatorio</div><div class="cond-desc" data-fill="cond1_desc">Al tratarse de procesos con datos sensibles, el cumplimiento normativo debe contemplarse desde el diseño.</div></div>
+      </div>
+      <div class="cond-row">
+        <span class="cond-dot"></span>
+        <div><div class="cond-lbl" data-fill="cond2_lbl">Estructuración de datos</div><div class="cond-desc" data-fill="cond2_desc">La información está dispersa entre sistemas; requiere una fase de curación antes de explotarla con IA.</div></div>
+      </div>
+      <div class="cond-row">
+        <span class="cond-dot"></span>
+        <div><div class="cond-lbl" data-fill="cond3_lbl">Cultura de adopción</div><div class="cond-desc" data-fill="cond3_desc">La implicación del equipo y el apoyo de dirección son determinantes para que la adopción se sostenga en el tiempo.</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- =================================================================== -->
+  <!-- ====== CAPA 2 · TABLERO DE JUEGO — Contexto (Operaciones) ======== -->
+  <!-- =================================================================== -->
+  <section class="page">
+    <!-- 🔒 FIJO · opener de capa -->
+    <div class="layer-band">
+      <div class="cn">02</div>
+      <div>
+        <div class="lr">Nivel de lectura · Operaciones</div>
+        <div class="lt">El tablero de juego</div>
+        <div class="ld">El rigor detrás de la decisión: por qué fracasan los atajos, qué oportunidades hay y cómo se emparejan con vuestros procesos.</div>
+      </div>
+    </div>
+
+    <!-- Dos verdades: el riesgo general (95%) y el impulso del sector (adopción) -->
+    <div class="twin">
+      <!-- ⚙️ FILL key="punto_partida" · lo que la empresa ya hace/probó y la carga actual (del formulario) -->
+      <div class="tw">
+        <div class="tw-k">Vuestro punto de partida</div>
+        <div class="tw-c" style="margin-top:0" data-fill="punto_partida">Hoy la tarea consume unas 40 horas a la semana. Ya habéis probado herramientas comerciales en procesos acotados.</div>
+      </div>
+      <!-- ⚙️ El estado del sector · FILL key="adopcion_pct" (%) en el número Y en el corte del conic-gradient de .donut -->
+      <div class="tw">
+        <div class="tw-k">El coste · quedarse fuera</div>
+        <div class="sector-in">
+          <!-- ⚙️ FILL key="adopcion_donut" · ajustar el % del conic-gradient para que coincida con adopcion_pct -->
+          <div class="donut" data-fill="adopcion_donut" style="background:conic-gradient(var(--green) 0 62%, #d7ddc9 62% 100%)">
+            <div class="donut-hole"><span data-fill="adopcion_pct">62</span>%</div>
+          </div>
+          <div class="sector-txt">
+            <div class="tw-c" style="margin-top:0">del sector ya ha incorporado IA en su operación.</div>
+            <!-- 🎯 FILL key="adopcion_binaria" · frase binaria de cierre. LÓGICA: adopcion_pct >= 50 → "No te quedes atrás" · adopcion_pct < 50 → "Únete a los pioneros" -->
+            <div class="binary" data-fill="adopcion_binaria">No te quedes atrás.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ⚙️ FILL key="no_basta" (por qué lo de más retorno es a medida) + key="ambar_puente" (transición al ámbar) -->
+    <div class="sec-k">Lo más importante</div>
+    <h2 class="sec-h">Por qué una herramienta comercial no basta para lo que más retorno tiene</h2>
+    <div class="nobasta">
+      <p class="nb-big" data-fill="no_basta">El valor de las tres intervenciones prioritarias está en lo que solo vosotros tenéis: vuestro histórico, vuestras plantillas y la trazabilidad que exige vuestro negocio. Ninguna herramienta del mercado lo trae de serie; hay que construirlo sobre vuestros datos.</p>
+      <p class="nb-puente"><span class="sw"></span><span data-fill="ambar_puente">Y no todo requiere desarrollo: varias oportunidades de la matriz se resuelven hoy con herramientas que ya existen. Van en ámbar.</span></p>
+    </div>
+    <!-- 🔒 FIJO · leyenda corta de las tres vías (la explicación larga va en la página "Lo que se puede abordar ya") -->
+    <div class="sec-k">Cómo leer la matriz</div>
+    <div class="vias-mini">
+      <div><b>Herramienta existente</b> · se resuelve configurando un producto del mercado.</div>
+      <div><b>Formación</b> · la herramienta existe; falta usarla bien y con seguridad.</div>
+      <div><b>A medida</b> · hace falta un sistema propio, integrado con lo vuestro.</div>
+    </div>
+  </section>
+
+  <!-- =================================================================== -->
+  <!-- ====== CAPA 2 · Matriz de Oportunidades ========================== -->
+  <!-- =================================================================== -->
+  <section class="page">
+    <div class="sec-k" style="margin-top:0">Capa 02 · Operaciones</div>
+    <h2 class="sec-h">La matriz de oportunidades</h2>
+    <p class="muted small" style="margin-top:8px">Áreas de mejora detectadas en vuestra empresa, convertidas en proyectos y ordenadas por prioridad objetiva.</p>
+
+    <!-- ⚙️ FILL key="matriz" · una fila por oportunidad, ordenadas por puntuación desc. Marcar las 3 primeras con class="is-top". Ajustar ancho de .scorebar i (%) y .scoreval -->
+    <table class="matriz">
+      <thead>
+        <tr><th class="n">#</th><th>Proyecto / área de mejora</th><th class="n">ROI</th><th class="n">Viabilidad</th><th>Puntuación &radic;(ROI&times;Viab.)</th><th class="via">Vía</th></tr>
+      </thead>
+      <tbody data-fill="matriz">
+        <tr class="is-top"><td class="n">1</td><td><div class="proj">Atención al cliente multilingüe<div class="pd">Respuesta asistida 24/7 en varios idiomas</div></div></td><td class="n">9</td><td class="n">10</td><td><div class="scorecell"><div class="scorebar"><i style="width:95%"></i></div><span class="scoreval">9.5</span></div></td></tr>
+        <tr class="is-top"><td class="n">2</td><td><div class="proj">Generación de informes financieros<div class="pd">Borradores automáticos desde datos internos</div></div></td><td class="n">9</td><td class="n">8</td><td><div class="scorecell"><div class="scorebar"><i style="width:85%"></i></div><span class="scoreval">8.5</span></div></td></tr>
+        <tr class="is-top"><td class="n">3</td><td><div class="proj">Optimización logística<div class="pd">Planificación de rutas y previsión de demanda</div></div></td><td class="n">10</td><td class="n">7</td><td><div class="scorecell"><div class="scorebar"><i style="width:84%"></i></div><span class="scoreval">8.4</span></div></td></tr>
+        <tr><td class="n">4</td><td><div class="proj">Clasificación documental<div class="pd">Etiquetado y archivo automático</div></div></td><td class="n">6</td><td class="n">9</td><td><div class="scorecell"><div class="scorebar"><i style="width:73%"></i></div><span class="scoreval">7.3</span></div></td></tr>
+        <tr><td class="n">5</td><td><div class="proj">Asistente de conocimiento interno<div class="pd">Búsqueda sobre manuales y procedimientos</div></div></td><td class="n">6</td><td class="n">8</td><td><div class="scorecell"><div class="scorebar"><i style="width:69%"></i></div><span class="scoreval">6.9</span></div></td></tr>
+        <tr><td class="n">6</td><td><div class="proj">Control de calidad asistido<div class="pd">Detección de anomalías en producción</div></div></td><td class="n">8</td><td class="n">4</td><td><div class="scorecell"><div class="scorebar"><i style="width:57%"></i></div><span class="scoreval">5.7</span></div></td></tr>
+      </tbody>
+    </table>
+
+    <!-- 🔒 FIJO · leyenda de escalas + referencia cruzada -->
+    <div class="legend">
+      <div class="lg-item"><b>ROI (1–10)</b> — 10 = automatización total de varios procesos masivos; 1 = ventaja nula o insignificante.</div>
+      <div class="lg-item"><b>Viabilidad (1–10)</b> — probabilidad estimada de éxito de la implantación (ver <em>Metodología · Estimación de éxito</em>).</div>
+      <div class="lg-item"><b>Puntuación = &radic;(ROI &times; Viabilidad)</b> — media geométrica: solo puntúa alto cuando <b>ambos</b> factores lo hacen; penaliza las apuestas de gran retorno pero baja viabilidad, y viceversa.</div>
+      <div class="lg-item"><span class="sw" style="background:var(--tint)"></span><b>Verde</b>: las tres de mayor puntuación, desarrolladas a continuación. <span class="sw" style="background:#FBF3E6;margin-left:10px"></span><b>Ámbar</b>: se resuelven con herramientas que ya existen, sin desarrollo.</div>
+    </div>
+
+  </section>
+
+  <!-- =================================================================== -->
+  <!-- ====== CAPA 2 · Mapeo de Soluciones (Top 3) ===================== -->
+  <!-- =================================================================== -->
+  <section class="page">
+    <div class="sec-k" style="margin-top:0">Capa 02 · Operaciones</div>
+    <h2 class="sec-h">El mapeo de soluciones</h2>
+    <p class="muted small" style="margin-top:8px">Para cada intervención prioritaria: el problema operativo que resuelve y qué necesita para salir bien.</p>
+
+    <!-- ⚙️ FILL key="mapeo" · una tarjeta por intervención del Top 3 -->
+    <div class="mapeo" data-fill="mapeo">
+      <div class="msol">
+        <div class="msol-h"><div class="mn">1</div><div class="mt hole" data-fill="mapeo1_nombre" style="text-decoration-color:var(--sage)">Atención al cliente multilingüe</div></div>
+        <div class="msol-b">
+          <div class="blk"><div class="bk">El problema operativo</div><p data-fill="mapeo1_problema">El equipo dedica horas a responder consultas repetitivas en varios idiomas, con tiempos de respuesta largos y calidad desigual según la carga.</p></div>
+          <div class="blk horas" data-fill="mapeo1_horas_blk"><div class="bk">Horas liberadas*</div><p class="hv" data-fill="mapeo1_horas">96-112 al mes</p><p class="hb" data-fill="mapeo1_horas_base">Base: …</p></div>
+          <div class="blk"><div class="bk">Qué necesita para salir bien</div><ul class="needs" data-fill="mapeo1_necesita"><li>Base de conocimiento estructurada y actualizada</li><li>Integración con el canal de atención actual</li><li>Formación del equipo y protocolo de escalado</li></ul></div>
+        </div>
+      </div>
+      <div class="msol">
+        <div class="msol-h"><div class="mn">2</div><div class="mt hole" data-fill="mapeo2_nombre" style="text-decoration-color:var(--sage)">Generación de informes financieros</div></div>
+        <div class="msol-b">
+          <div class="blk"><div class="bk">El problema operativo</div><p data-fill="mapeo2_problema">La elaboración manual de informes consume días de trabajo cualificado cada cierre y es propensa a errores de consolidación.</p></div>
+          <div class="blk horas" data-fill="mapeo2_horas_blk"><div class="bk">Horas liberadas*</div><p class="hv" data-fill="mapeo2_horas">96-112 al mes</p><p class="hb" data-fill="mapeo2_horas_base">Base: …</p></div>
+          <div class="blk"><div class="bk">Qué necesita para salir bien</div><ul class="needs" data-fill="mapeo2_necesita"><li>Acceso gobernado a las fuentes de datos financieras</li><li>Plantillas y reglas de negocio validadas</li><li>Revisión humana en el circuito de aprobación</li></ul></div>
+        </div>
+      </div>
+      <div class="msol">
+        <div class="msol-h"><div class="mn">3</div><div class="mt hole" data-fill="mapeo3_nombre" style="text-decoration-color:var(--sage)">Optimización logística</div></div>
+        <div class="msol-b">
+          <div class="blk"><div class="bk">El problema operativo</div><p data-fill="mapeo3_problema">La planificación de rutas y la previsión de demanda se hacen con criterio manual, dejando margen de mejora en costes y plazos.</p></div>
+          <div class="blk horas" data-fill="mapeo3_horas_blk"><div class="bk">Horas liberadas*</div><p class="hv" data-fill="mapeo3_horas">96-112 al mes</p><p class="hb" data-fill="mapeo3_horas_base">Base: …</p></div>
+          <div class="blk"><div class="bk">Qué necesita para salir bien</div><ul class="needs" data-fill="mapeo3_necesita"><li>Histórico de pedidos y rutas con calidad suficiente</li><li>Integración con el sistema de gestión actual</li><li>Fase piloto acotada antes de escalar</li></ul></div>
+        </div>
+      </div>
+    </div>
+    <p class="horas-nota" data-fill="horas_nota">* Estimaciones a partir de la información de la reunión combinada con los ahorros documentados en las fuentes del anexo.</p>
+  </section>
+
+  <!-- ====== CAPA 2 · Hasta dónde llega una herramienta existente / dónde empieza lo a medida ====== -->
+  <section class="page">
+    <div class="sec-k" style="margin-top:0">Capa 02 · Operaciones</div>
+    <h2 class="sec-h">Hasta dónde llega una herramienta existente</h2>
+    <p class="muted small" style="margin-top:8px">Para las tres intervenciones prioritarias: lo que ya se puede hacer con un producto del mercado, y dónde empieza lo que hay que construir.</p>
+
+    <!-- ⚙️ FILL key="llega1..3" · lo que SÍ hace una herramienta existente (honesto) -->
+    <div class="llega-box" data-fill="llega_box">
+      <div class="lb-k">Lo que sí hace, hoy, una herramienta existente</div>
+      <div class="llega" data-fill="llega1">Una persona sube unas decenas de documentos y obtiene respuestas y borradores sobre ellos.</div>
+      <div class="llega" data-fill="llega2">Redactar una memoria concreta a partir de dos o tres anteriores.</div>
+      <div class="llega" data-fill="llega3">Comprobar el valor en una semana, antes de construir nada.</div>
+    </div>
+
+    <!-- ⚙️ FILL key="limiteN_t / _h / _m" · dónde se queda corta y qué hace el sistema propio en su lugar -->
+    <div class="sec-k" style="margin-top:22px">Dónde empieza lo a medida</div>
+    <div class="limites" data-fill="limites">
+      <div class="lim-h"><span></span><span>Con una herramienta existente</span><span>Con un sistema propio</span></div>
+      <div class="lim" data-fill="limite1_row"><div class="lt" data-fill="limite1_t">Escala</div><div class="lh" data-fill="limite1_h">…</div><div class="lm" data-fill="limite1_m">…</div></div>
+      <div class="lim" data-fill="limite2_row"><div class="lt" data-fill="limite2_t">Formato</div><div class="lh" data-fill="limite2_h">…</div><div class="lm" data-fill="limite2_m">…</div></div>
+      <div class="lim" data-fill="limite3_row"><div class="lt" data-fill="limite3_t">Trazabilidad</div><div class="lh" data-fill="limite3_h">…</div><div class="lm" data-fill="limite3_m">…</div></div>
+      <div class="lim" data-fill="limite4_row"><div class="lt" data-fill="limite4_t">Uso compartido</div><div class="lh" data-fill="limite4_h">…</div><div class="lm" data-fill="limite4_m">…</div></div>
+    </div>
+
+    <!-- ⚙️ FILL key="construccion1..5" · cómo se construye (las cinco piezas) -->
+    <div class="sec-k" style="margin-top:22px">Cómo se construye</div>
+    <div class="cpasos">
+      <div class="cstep" data-fill="construccion1"><b>1</b>Indexar el histórico con sus versiones y permisos</div>
+      <div class="cstep" data-fill="construccion2"><b>2</b>Extraer los requisitos de cada pliego</div>
+      <div class="cstep" data-fill="construccion3"><b>3</b>Generar sobre vuestra plantilla</div>
+      <div class="cstep" data-fill="construccion4"><b>4</b>Validar con reglas y con un ingeniero</div>
+      <div class="cstep" data-fill="construccion5"><b>5</b>Registrar qué se generó, con qué y quién lo aprobó</div>
+    </div>
+  </section>
+
+  <!-- ====== CAPA 2 · Lo que se puede abordar ya (herramienta existente) ===================== -->
+  <!-- =================================================================== -->
+  <section class="page">
+    <div class="sec-k" style="margin-top:0">Capa 02 · Operaciones</div>
+    <h2 class="sec-h">Lo que se puede abordar ya</h2>
+    <p class="muted small" style="margin-top:8px">Las oportunidades en ámbar de la matriz: se resuelven con herramientas que ya existen, sin desarrollo. El problema que resuelve cada una y qué necesita para salir bien.</p>
+
+    <!-- ⚙️ FILL key="mapeo" · una tarjeta por intervención del Top 3 -->
+    <div class="mapeo" data-fill="mapeo_tool">
+      <div class="msol">
+        <div class="msol-h"><div class="mn tool">1</div><div class="mt hole" data-fill="mapeoT1_nombre" style="text-decoration-color:var(--sage)">Atención al cliente multilingüe</div></div>
+        <div class="msol-b">
+          <div class="blk"><div class="bk">El problema operativo</div><p data-fill="mapeoT1_problema">El equipo dedica horas a responder consultas repetitivas en varios idiomas, con tiempos de respuesta largos y calidad desigual según la carga.</p></div>
+          <div class="blk horas" data-fill="mapeoT1_horas_blk"><div class="bk">Horas liberadas*</div><p class="hv" data-fill="mapeoT1_horas">96-112 al mes</p><p class="hb" data-fill="mapeoT1_horas_base">Base: …</p></div>
+          <div class="blk"><div class="bk">Qué necesita para salir bien</div><ul class="needs" data-fill="mapeoT1_necesita"><li>Base de conocimiento estructurada y actualizada</li><li>Integración con el canal de atención actual</li><li>Formación del equipo y protocolo de escalado</li></ul></div>
+        </div>
+      </div>
+      <div class="msol">
+        <div class="msol-h"><div class="mn tool">2</div><div class="mt hole" data-fill="mapeoT2_nombre" style="text-decoration-color:var(--sage)">Generación de informes financieros</div></div>
+        <div class="msol-b">
+          <div class="blk"><div class="bk">El problema operativo</div><p data-fill="mapeoT2_problema">La elaboración manual de informes consume días de trabajo cualificado cada cierre y es propensa a errores de consolidación.</p></div>
+          <div class="blk horas" data-fill="mapeoT2_horas_blk"><div class="bk">Horas liberadas*</div><p class="hv" data-fill="mapeoT2_horas">96-112 al mes</p><p class="hb" data-fill="mapeoT2_horas_base">Base: …</p></div>
+          <div class="blk"><div class="bk">Qué necesita para salir bien</div><ul class="needs" data-fill="mapeoT2_necesita"><li>Acceso gobernado a las fuentes de datos financieras</li><li>Plantillas y reglas de negocio validadas</li><li>Revisión humana en el circuito de aprobación</li></ul></div>
+        </div>
+      </div>
+      <div class="msol">
+        <div class="msol-h"><div class="mn tool">3</div><div class="mt hole" data-fill="mapeoT3_nombre" style="text-decoration-color:var(--sage)">Optimización logística</div></div>
+        <div class="msol-b">
+          <div class="blk"><div class="bk">El problema operativo</div><p data-fill="mapeoT3_problema">La planificación de rutas y la previsión de demanda se hacen con criterio manual, dejando margen de mejora en costes y plazos.</p></div>
+          <div class="blk horas" data-fill="mapeoT3_horas_blk"><div class="bk">Horas liberadas*</div><p class="hv" data-fill="mapeoT3_horas">96-112 al mes</p><p class="hb" data-fill="mapeoT3_horas_base">Base: …</p></div>
+          <div class="blk"><div class="bk">Qué necesita para salir bien</div><ul class="needs" data-fill="mapeoT3_necesita"><li>Histórico de pedidos y rutas con calidad suficiente</li><li>Integración con el sistema de gestión actual</li><li>Fase piloto acotada antes de escalar</li></ul></div>
+        </div>
+      </div>
+    </div>
+    <p class="horas-nota" data-fill="horas_nota">* Estimaciones a partir de la información de la reunión combinada con los ahorros documentados en las fuentes del anexo.</p>
+  </section>
+
+  <!-- ====== CAPA 2 · Qué significa «herramienta existente» (las tres puertas) ====== -->
+  <section class="page">
+    <div class="sec-k" style="margin-top:0">Capa 02 · Operaciones</div>
+    <h2 class="sec-h">Qué significa «herramienta existente»</h2>
+    <p class="muted small" style="margin-top:8px">Las oportunidades en ámbar no requieren desarrollo, pero sí decisiones. Estas son las capas que hay debajo de «configurar una herramienta».</p>
+    <!-- 🔒 FIJO · leyenda de vías (columna "Vía" de la matriz) -->
+    <div class="vias" style="margin-top:14px">
+      <div class="via wide"><div class="vh">Herramienta existente</div>
+        <p>No hablamos de un chat genérico, sino de entornos profesionales que ya traen las piezas intermedias hechas: conectores con vuestros documentos, permisos heredados, plantillas, flujos. Se implantan configurando, no programando. Pero activar una herramienta y sacarle partido son dos cosas distintas, y en medio hay tres capas de decisiones.</p>
+        <p class="puerta"><b>Eficiencia:</b> qué subherramienta usar para cada tarea, cómo conectar los datos de vuestra empresa como contexto, cómo coordinar varios agentes en un mismo flujo, dónde están los límites de la herramienta y qué no hay que pedirle, cuál pasa a ser el papel de la persona que hoy hace la tarea…</p>
+        <p class="puerta"><b>Vuestras normas de siempre, con una herramienta nueva:</b> cómo se anonimizan los datos personales antes de que los vea el modelo, cómo se hereda la separación de accesos que ya tenéis para que nadie consulte lo que hoy no puede ver, cómo se exige al proveedor que no retenga la información, cómo queda todo registrado para vuestras auditorías…</p>
+        <p class="puerta"><b>La normativa propia de la IA:</b> en qué nivel de riesgo cae cada uso, qué hay que documentar y registrar, cuándo hay que avisar de que un texto lo ha generado un sistema, qué supervisión humana debe quedar demostrada…</p>
+        <p class="cierre">Cada una de esas decisiones tiene una respuesta correcta para vuestro caso, y no viene en el manual.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====== CAPA 2 · Por dónde empezar (el camino en tres pasos) ====== -->
+  <section class="page">
+    <div class="sec-k" style="margin-top:0">Capa 02 · Operaciones</div>
+    <h2 class="sec-h">Por dónde empezar</h2>
+    <p class="muted small" style="margin-top:8px">El camino en tres pasos: de lo que ya existe a un sistema propio, con lo que desbloquea cada uno.</p>
+    <!-- ⚙️ FILL key="camino_intro" + pasoN_* · el camino en tres pasos (misma forma que el timeline de la reunión, sin precios) -->
+    <div class="camino" style="margin-top:8px">
+      <p class="camino-intro" data-fill="camino_intro">La inversión con más retorno es la primera de la matriz y es a medida: el valor está en vuestro histórico, vuestras plantillas y la trazabilidad de una licitación. El camino empieza por la inversión mínima.</p>
+      <div class="axis">
+        <div class="ax-line"></div>
+        <div class="ax-m" style="left:0%"><i></i><span>Hoy</span></div>
+        <div class="ax-m" style="left:33.3%"><i></i><span data-fill="paso1_plazo">Semanas</span></div>
+        <div class="ax-m" style="left:66.6%"><i></i><span data-fill="paso2_plazo">4-8 semanas</span></div>
+        <div class="ax-m" style="left:100%"><i></i><span data-fill="paso3_plazo">2-4 meses</span></div>
+      </div>
+      <div class="pasos">
+        <div class="paso">
+          <div class="pn">1</div>
+          <div class="pt" data-fill="paso1_titulo">Herramientas existentes</div>
+          <div class="pk">Cubre</div><p data-fill="paso1_cubre">Las oportunidades en ámbar de la matriz.</p>
+          <div class="pk">Qué es</div><p data-fill="paso1_que">Configurar una herramienta que ya existe en el mercado; cuál, lo dice el dictamen.</p>
+          <div class="pk">Lo desbloquea</div><p class="pdes" data-fill="paso1_desbloquea">Un dictamen de encaje: qué herramienta y cómo configurarla para vuestra normativa.</p>
+        </div>
+        <div class="paso">
+          <div class="pn">2</div>
+          <div class="pt" data-fill="paso2_titulo">Piloto de la primera intervención</div>
+          <div class="pk">Cubre</div><p data-fill="paso2_cubre">La intervención 1 sobre datos reales.</p>
+          <div class="pk">Qué es</div><p data-fill="paso2_que">Limpieza del dato y conversión a contexto, con criterio de parada acordado antes de empezar.</p>
+          <div class="pk">Lo desbloquea</div><p class="pdes" data-fill="paso2_desbloquea">El resultado del paso 1 y la curación del histórico.</p>
+        </div>
+        <div class="paso">
+          <div class="pn">3</div>
+          <div class="pt" data-fill="paso3_titulo">Sistema en producción</div>
+          <div class="pk">Cubre</div><p data-fill="paso3_cubre">La intervención 1 integrada; después, la 2 y la 3.</p>
+          <div class="pk">Qué es</div><p data-fill="paso3_que">Controles de entrada y salida, integración con vuestros sistemas y trazabilidad hasta quien valida.</p>
+          <div class="pk">Lo desbloquea</div><p class="pdes" data-fill="paso3_desbloquea">El resultado del piloto.</p>
+        </div>
+      </div>
+      <!-- 🔒 FIJO · lo que el camino no exige -->
+      <p class="camino-no">Ninguno de los tres pasos exige sustituir un sistema, contratar perfiles nuevos ni mover datos fuera de la Unión Europea.</p>
+    </div>
+  </section>
+
+  <!-- =================================================================== -->
+  <!-- ====== CAPA 3 · Requisitos y condiciones (Técnico) ============== -->
+  <!-- =================================================================== -->
+  <section class="page">
+    <!-- 🔒 FIJO · opener de capa -->
+    <div class="layer-band">
+      <div class="cn">03</div>
+      <div>
+        <div class="lr">Nivel de lectura · Equipo técnico, legal y financiero</div>
+        <div class="lt">Requisitos y condiciones</div>
+        <div class="ld">Lo que este tipo de proyecto exige para ejecutarse con garantías: infraestructura, datos, adopción, cumplimiento, y cómo se ha elaborado el análisis.</div>
+      </div>
+    </div>
+
+    <div class="sec-k">Lo que necesitáis internamente</div>
+    <h2 class="sec-h">Infraestructura, datos y adopción, paso a paso</h2>
+    <!-- ⚙️ FILL key="req_pN_*" · requisitos por paso (si faltan, se muestra la versión de tres filas de abajo) -->
+    <div class="reqgrid" data-fill="reqgrid">
+      <div class="rg-h"></div>
+      <div class="rg-h"><b>Paso 1</b><span data-fill="rq_paso1">Herramientas existentes</span></div>
+      <div class="rg-h"><b>Paso 2</b><span data-fill="rq_paso2">Piloto</span></div>
+      <div class="rg-h"><b>Paso 3</b><span data-fill="rq_paso3">Producción</span></div>
+      <div class="rg-k">Infraestructura</div>
+      <div class="rg-c" data-fill="req_p1_infra"></div><div class="rg-c" data-fill="req_p2_infra"></div><div class="rg-c" data-fill="req_p3_infra"></div>
+      <div class="rg-k">Datos</div>
+      <div class="rg-c" data-fill="req_p1_datos"></div><div class="rg-c" data-fill="req_p2_datos"></div><div class="rg-c" data-fill="req_p3_datos"></div>
+      <div class="rg-k">Adopción</div>
+      <div class="rg-c" data-fill="req_p1_adopcion"></div><div class="rg-c" data-fill="req_p2_adopcion"></div><div class="rg-c" data-fill="req_p3_adopcion"></div>
+    </div>
+    <!-- ⚙️ FILL key="requerimientos" · requisitos internos + condiciones previas con estrategia si no las tienen -->
+    <div class="reqs" data-fill="requerimientos">
+      <div class="req"><div class="rq-h"><span class="rq-k">Infraestructura</span>Base técnica</div><div class="rq-b" data-fill="req_infra">Entorno en la nube empresarial y conectores a los sistemas actuales (ERP/CRM). No requiere sustituir la infraestructura existente.</div></div>
+      <div class="req"><div class="rq-h"><span class="rq-k">Datos</span>Preparación previa</div><div class="rq-b" data-fill="req_datos">Fuentes depuradas y estructuradas para cada iniciativa. <b>Si la información está dispersa</b>, el primer paso es una fase de curación y gobierno del dato antes de explotarla.</div></div>
+      <div class="req"><div class="rq-h"><span class="rq-k">Adopción</span>Gestión del cambio</div><div class="rq-b" data-fill="req_adopcion">Capacitación por rol y referentes internos que sostienen el uso. <b>Si la cultura aún no está madura</b>, se acompaña con un plan de gestión del cambio para no perder la inversión.</div></div>
+    </div>
+
+    <div class="sec-k">Cumplimiento y datos</div>
+    <h2 class="sec-h">Requisitos que exige este tipo de proyecto</h2>
+    <!-- 🔒 FIJO (reformulable ⚙️ según sector) · requisitos que ELLOS deben cumplir, no nuestro producto -->
+    <div class="foso">
+      <div class="fc"><div class="fh">Aislamiento de datos</div><p data-fill="cump_aislamiento">Los datos corporativos deben permanecer aislados y no emplearse para entrenar modelos públicos.</p></div>
+      <div class="fc"><div class="fh">Normativa europea</div><p data-fill="cump_normativa">El tratamiento debe ajustarse al RGPD y al marco europeo de IA, y estar preparado para auditorías.</p></div>
+      <div class="fc"><div class="fh">Trazabilidad</div><p data-fill="cump_trazabilidad">Debe poder auditarse qué generó el sistema, con qué datos y bajo qué criterio.</p></div>
+    </div>
+  </section>
+
+  <!-- =================================================================== -->
+  <!-- ====== CAPA 3 · Metodología del análisis + Fuentes ============== -->
+  <!-- =================================================================== -->
+  <!-- ====== Fuentes (página propia) =================================== -->
+  <section class="page">
+    <div class="sec-k" style="margin-top:0">Fuentes</div>
+    <h2 class="sec-h">En qué se apoya este informe</h2>
+    <!-- ⚙️ FILL key="fuentes" · una por <li>. Si no hay, ocultar bloque -->
+    <ol class="src-list" data-fill="fuentes">
+      <li><b>Autor / Medio.</b> Título del informe citado <span class="yr">(año)</span>. Dato aportado.</li>
+      <li><b>Autor / Medio.</b> Título del informe citado <span class="yr">(año)</span>. Dato aportado.</li>
+    </ol>
+
+  </section>
+
+  <!-- ====== Metodología y siguiente paso (última página) ============= -->
+  <section class="page last">
+    <div class="sec-k" style="margin-top:0">Metodología</div>
+    <h2 class="sec-h">Cómo se ha elaborado este análisis</h2>
+    <!-- 🔒 FIJO · qué hace la investigación (sin decir que es automática) -->
+    <p class="meto" style="margin-top:6px;font-size:13px">Investigación estructurada sobre fuentes verificables, contrastada con la realidad concreta de vuestra empresa:</p>
+    <div class="meto-grid">
+      <div><b>Casos de éxito.</b> Implantaciones reales documentadas en empresas y sectores comparables.</div>
+      <div><b>Análisis del sector.</b> Dirección de vuestro sector para situar las oportunidades en contexto.</div>
+      <div><b>Precedentes técnicos.</b> Soluciones y despliegues documentados que demuestran la viabilidad de cada caso.</div>
+      <div><b>Meta-análisis económicos.</b> Evidencia agregada sobre la transformación de este tipo de tareas.</div>
+      <div><b>Estimación de éxito.</b> Calibrada según la completitud de los casos y su cercanía a vuestras tareas reales.</div>
+    </div>
+
+  
+    <!-- ⚙️ FILL key="contacto_*" · siguiente paso (texto fijo) + contacto del consultor (.env) -->
+    <div class="next">
+      <div class="rl">Siguiente paso</div>
+      <p>Este estudio se recorre en <b>una reunión de 45 minutos</b>: ordenamos las tres intervenciones en el tiempo, vemos qué se resuelve con herramientas existentes y qué requiere desarrollo, y acordamos por cuál empezar.</p>
+      <div class="next-c"><span data-fill="contacto_nombre">Nombre del consultor</span><span class="sep">·</span><span data-fill="contacto_email">correo</span><span class="sep">·</span><span data-fill="contacto_tel">teléfono</span></div>
+    </div>
+  </section>
+
+</main>
+</body>
+</html>
