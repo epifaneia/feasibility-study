@@ -80,13 +80,14 @@ pip install -r requirements.txt && playwright install chromium
 cp .env.example .env            # GEMINI_API_KEY, CUSTODIA_ACTOR, contacto del consultor
 python app.py                   # → http://127.0.0.1:8091 (formulario) · /panel (leads)
 python regenerar.py leads/<carpeta>   # vuelve a renderizar sin repetir la investigación
+python tests/test_derivacion.py        # ranking, retorno, avisos de QA y plantilla, sin red
 ```
 
 La investigación por API es de pago y tarda minutos (tope configurable, 45 por defecto); el formulario responde al instante y el informe se genera en segundo plano. Este repositorio no lleva datos: `leads/` está fuera de git.
 
 ## Limitaciones
 
-- La investigación necesita la web, así que no hay modo local para ella: el brief de la empresa sale a Gemini. Es un formulario de diagnóstico, no documentación interna, y así se le dice a la empresa en el propio formulario. Para dato confidencial, este no es el pipeline.
+- La investigación necesita la web, así que no hay modo local para ella: el brief de la empresa sale a Gemini, y Google lo conserva. Es un formulario de diagnóstico, no documentación interna, y así se le dice a la empresa en el propio formulario. Para dato confidencial, este no es el pipeline.
 - Sin ground truth sobre la calidad del plan: se mide la reproducibilidad, el anclaje y los avisos, no el acierto.
 - La investigación puede citar fuentes flojas. Por eso las de proveedor van al final, se cuentan, y todas van al anexo con su URL.
 - El PDF depende de Playwright y Chromium; el ajuste de longitud con un modelo local es opcional y sin él la plantilla recorta con shrink-to-fit.
@@ -101,7 +102,7 @@ Los mismos cuatro epígrafes en todos los repositorios. Las filas **hoy** son lo
 
 | | | |
 |---|---|---|
-| **Confidencialidad** | El servidor escucha en `127.0.0.1`; `leads/` y `.env` están fuera de git. Lo que sale a Gemini es el brief del formulario y, en la extracción, la investigación ya hecha: dato de diagnóstico, no documentos internos. La empresa lo lee en el pie del formulario antes de enviar. | **hoy** |
+| **Confidencialidad** | El servidor escucha en `127.0.0.1`; `leads/` y `.env` están fuera de git. Lo que sale a Gemini es el brief del formulario y, en la extracción, la investigación ya hecha: dato de diagnóstico, no documentos internos. La investigación corre en modo background, que exige `store=True`: el resultado se recoge después por su ID, así que Google conserva la petición y su resultado según sus términos de servicio. La empresa lo lee en el pie del formulario antes de enviar. | **hoy** |
 | **Trazabilidad** | Cada lead guarda lo que dijo la empresa, lo que se pidió, lo que respondió el modelo, el orden calculado y los avisos: seis ficheros que permiten rehacer el PDF sin volver a llamar a nadie. El anexo lleva todas las fuentes con su URL. | **hoy** |
 | | **Cable 2 · eventos.** Cada llamada a un modelo (investigación, extracción, longitud) pasa por `custodia/ledger`: una línea JSON con actor, paso, motor, endpoint, si el dato salió, tamaño y hash. Nunca el texto. `logs/custody.jsonl` o stdout. La empresa apunta su SIEM ahí. | **cable** |
 | **Prevención de fugas** | El modelo no tiene credenciales; la clave la tiene el proceso y solo ve el brief y la investigación. El panel sirve ficheros de la carpeta del lead y nada más. | **hoy** |
@@ -124,7 +125,7 @@ plantillas/      prompt_research.txt · prompt_extraccion.txt · reporte_ia_plan
 static/          index.html (formulario en cuatro pasos) · panel.html (leads del consultor)
 docs/            FORMULARIO.md · INTEGRATION.es.md
 custodia/        identity · ledger · signoff · cli  — los tres cables de integración
-tools/signoff.py · tests/test_custodia.py
+tools/signoff.py · tests/test_custodia.py · tests/test_derivacion.py
 leads/           un directorio por reunión — fuera de git
 ```
 

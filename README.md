@@ -80,13 +80,14 @@ pip install -r requirements.txt && playwright install chromium
 cp .env.example .env            # GEMINI_API_KEY, CUSTODIA_ACTOR, consultant contact
 python app.py                   # → http://127.0.0.1:8091 (form) · /panel (leads)
 python regenerar.py leads/<folder>   # re-render without repeating the research
+python tests/test_derivacion.py      # ranking, return, QA warnings and template, offline
 ```
 
 Research over the API is paid and takes minutes (configurable cap, 45 by default); the form responds instantly and the report is generated in the background. This repository ships no data: `leads/` is outside git.
 
 ## Limitations
 
-- The research needs the web, so there is no local mode for it: the company's brief goes to Gemini. It is an assessment form, not internal documentation, and the form itself tells the company so. For confidential data, this is not the pipeline.
+- The research needs the web, so there is no local mode for it: the company's brief goes to Gemini, and Google keeps it. It is an assessment form, not internal documentation, and the form itself tells the company so. For confidential data, this is not the pipeline.
 - No ground truth on plan quality: reproducibility, anchoring and warnings are measured, not correctness.
 - The research may cite weak sources. That is why vendor sources go last, are counted, and all go to the annex with their URL.
 - The PDF depends on Playwright and Chromium; the length adjustment with a local model is optional and without it the template trims with shrink-to-fit.
@@ -101,7 +102,7 @@ The same four headings in every repository. **today** rows are what the code doe
 
 | | | |
 |---|---|---|
-| **Confidentiality** | The server listens on `127.0.0.1`; `leads/` and `.env` are outside git. What goes to Gemini is the form's brief and, at extraction, the research already done: assessment data, not internal documents. The company reads this in the form's footer before submitting. | **today** |
+| **Confidentiality** | The server listens on `127.0.0.1`; `leads/` and `.env` are outside git. What goes to Gemini is the form's brief and, at extraction, the research already done: assessment data, not internal documents. The research runs in background mode, which requires `store=True`: the result is fetched later by its ID, so Google keeps the request and its result under its terms of service. The company reads this in the form's footer before submitting. | **today** |
 | **Traceability** | Every lead keeps what the company said, what was asked, what the model answered, the computed order and the warnings: six files that allow the PDF to be rebuilt without calling anyone again. The annex carries every source with its URL. | **today** |
 | | **Wire 2 · events.** Every model call (research, extraction, length) goes through `custodia/ledger`: one JSON line with actor, step, engine, endpoint, whether data left, size and hash. Never the text. `logs/custody.jsonl` or stdout. The company points its SIEM there. | **wire** |
 | **Leak prevention** | The model has no credentials; the process holds the key and only sees the brief and the research. The panel serves files from the lead's folder and nothing else. | **today** |
@@ -124,7 +125,7 @@ plantillas/      prompt_research.txt · prompt_extraccion.txt · reporte_ia_plan
 static/          index.html (four-step form) · panel.html (consultant's leads)
 docs/            FORMULARIO.md · INTEGRATION.md
 custodia/        identity · ledger · signoff · cli  — the three integration wires
-tools/signoff.py · tests/test_custodia.py
+tools/signoff.py · tests/test_custodia.py · tests/test_derivacion.py
 leads/           one directory per meeting — outside git
 ```
 

@@ -51,7 +51,7 @@ def _extraer_texto(interaction) -> str:
 def _crear_y_esperar(client, prompt: str) -> str:
     interaction = client.interactions.create(
         input=prompt, agent=MODELO, background=True, store=True,
-    )
+    )   # background exige store=True: se recoge luego por ID, así que Google conserva la petición
     print(f"🔍 Research lanzado. ID: {interaction.id}")
     inicio = time.monotonic()
     while True:
